@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-gold: #D4AF37;
+  --color-charcoal: #2E2E2E;
+  --color-ivory: #F9F6F0;
+  --color-navy: #0F1C2E;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--color-ivory);
+  }
+  
+  body {
+    @apply font-sans text-charcoal;
+    background-color: var(--color-ivory);
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3, h4, h5 {
+    @apply font-serif leading-tight;
+  }
+  
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl font-semibold;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl font-semibold;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl font-medium;
+  }
+  
+  p {
+    @apply leading-relaxed;
+  }
+}
+
+@layer components {
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .btn {
+    @apply inline-block px-6 py-3 rounded-md text-center font-medium transition-all duration-300;
+  }
+  
+  .btn-primary {
+    @apply btn bg-gold text-charcoal hover:bg-opacity-90;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-charcoal text-ivory hover:bg-opacity-90;
+  }
+  
+  .btn-outline {
+    @apply btn border-2 border-gold text-gold hover:bg-gold hover:text-charcoal;
+  }
+
+  .section {
+    @apply py-16 md:py-24;
+  }
+  
+  .section-title {
+    @apply mb-8 md:mb-12 text-center;
+  }
+  
+  .section-subtitle {
+    @apply text-lg md:text-xl max-w-2xl mx-auto text-center mb-12 text-charcoal/80;
+  }
+
+  .card {
+    @apply bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300;
+  }
+}
+
+/* Scroll animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.8s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hide scrollbar but allow scrolling */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
