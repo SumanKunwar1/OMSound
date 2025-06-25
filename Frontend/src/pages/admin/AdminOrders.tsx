@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Eye, Edit, Truck, Package, CheckCircle, XCircle, Search, Filter } from 'lucide-react';
+import { useState } from 'react';
+import { Edit, Truck, Package, CheckCircle, XCircle } from 'lucide-react';
 import DataTable from '../../components/admin/DataTable';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 
@@ -57,13 +57,45 @@ const mockOrders: Order[] = [
     status: 'Processing',
     orderDate: '2024-01-20',
     shippingAddress: '789 Pine St, Chicago, IL 60601'
+  },
+  {
+    id: 'ORD-004',
+    customerName: 'Sarah Wilson',
+    customerEmail: 'sarah@example.com',
+    items: [
+      { productName: 'Serenity Bowl Set', quantity: 1, price: 350 }
+    ],
+    totalAmount: 350,
+    status: 'Pending',
+    orderDate: '2024-01-22',
+    shippingAddress: '321 Elm St, Miami, FL 33101'
+  },
+  {
+    id: 'ORD-005',
+    customerName: 'David Brown',
+    customerEmail: 'david@example.com',
+    items: [
+      { productName: 'Harmony Bowl', quantity: 1, price: 225 }
+    ],
+    totalAmount: 225,
+    status: 'Cancelled',
+    orderDate: '2024-01-19',
+    shippingAddress: '654 Maple Ave, Seattle, WA 98101'
   }
+];
+
+const statusTabs = [
+  { key: 'Pending', label: 'Pending', icon: Package },
+  { key: 'Processing', label: 'Processing', icon: Edit },
+  { key: 'Shipped', label: 'Shipped', icon: Truck },
+  { key: 'Delivered', label: 'Delivered', icon: CheckCircle },
+  { key: 'Cancelled', label: 'Cancelled', icon: XCircle }
 ];
 
 const AdminOrders = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<string>('Pending');
   const { hasPermission } = useAdminAuth();
 
   const getStatusColor = (status: string) => {
@@ -100,6 +132,23 @@ const AdminOrders = () => {
     }
   };
 
+  const getTabColor = (status: string) => {
+    switch (status) {
+      case 'Pending':
+        return 'border-yellow-500 text-yellow-600';
+      case 'Processing':
+        return 'border-blue-500 text-blue-600';
+      case 'Shipped':
+        return 'border-purple-500 text-purple-600';
+      case 'Delivered':
+        return 'border-green-500 text-green-600';
+      case 'Cancelled':
+        return 'border-red-500 text-red-600';
+      default:
+        return 'border-gray-500 text-gray-600';
+    }
+  };
+
   const columns = [
     { key: 'id', label: 'Order ID', sortable: true },
     { key: 'customerName', label: 'Customer', sortable: true },
@@ -108,16 +157,6 @@ const AdminOrders = () => {
       label: 'Total',
       sortable: true,
       render: (amount: number) => `$${amount.toFixed(2)}`
-    },
-    { 
-      key: 'status', 
-      label: 'Status',
-      render: (status: string) => (
-        <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(status)}`}>
-          {getStatusIcon(status)}
-          <span className="ml-1">{status}</span>
-        </span>
-      )
     },
     { 
       key: 'orderDate', 
@@ -142,9 +181,13 @@ const AdminOrders = () => {
     alert(`Order ${orderId} status updated to ${newStatus}`);
   };
 
-  const filteredOrders = statusFilter 
-    ? mockOrders.filter(order => order.status === statusFilter)
-    : mockOrders;
+  // Filter orders based on active tab
+  const filteredOrders = mockOrders.filter(order => order.status === activeTab);
+
+  // Get count for each status
+  const getStatusCount = (status: string) => {
+    return mockOrders.filter(order => order.status === status).length;
+  };
 
   return (
     <div className="space-y-6">
@@ -154,51 +197,81 @@ const AdminOrders = () => {
           <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
           <p className="text-gray-600">Manage customer orders and fulfillment</p>
         </div>
-        <div className="flex items-center space-x-4">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
-          >
-            <option value="">All Statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="Processing">Processing</option>
-            <option value="Shipped">Shipped</option>
-            <option value="Delivered">Delivered</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
+      </div>
+
+      {/* Status Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          {statusTabs.map((tab) => {
+            const count = getStatusCount(tab.key);
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.key;
+            
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                  isActive
+                    ? `${getTabColor(tab.key)} border-b-2`
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <Icon size={16} className="mr-2" />
+                {tab.label}
+                <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                  isActive ? getStatusColor(tab.key) : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Active Tab Content */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              {getStatusIcon(activeTab)}
+              <h2 className="ml-2 text-lg font-semibold text-gray-900">
+                {activeTab} Orders ({filteredOrders.length})
+              </h2>
+            </div>
+            <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(activeTab)}`}>
+              {filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'}
+            </div>
+          </div>
+        </div>
+
+        {/* Orders Table */}
+        <div className="p-6">
+          {filteredOrders.length > 0 ? (
+            <DataTable
+              data={filteredOrders}
+              columns={columns}
+              onView={handleView}
+              onEdit={hasPermission('orders.write') ? (order) => handleStatusUpdate(order.id, 'Processing') : undefined}
+              searchable
+              filterable
+            />
+          ) : (
+            <div className="text-center py-12">
+              <div className="flex justify-center mb-4">
+                {getStatusIcon(activeTab)}
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No {activeTab.toLowerCase()} orders
+              </h3>
+              <p className="text-gray-500">
+                There are currently no orders with {activeTab.toLowerCase()} status.
+              </p>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Orders Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'].map((status) => {
-          const count = mockOrders.filter(order => order.status === status).length;
-          return (
-            <div key={status} className="bg-white p-4 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">{status}</p>
-                  <p className="text-2xl font-bold text-gray-900">{count}</p>
-                </div>
-                <div className={`p-2 rounded-full ${getStatusColor(status)}`}>
-                  {getStatusIcon(status)}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Orders Table */}
-      <DataTable
-        data={filteredOrders}
-        columns={columns}
-        onView={handleView}
-        onEdit={hasPermission('orders.write') ? (order) => handleStatusUpdate(order.id, 'Processing') : undefined}
-        searchable
-        filterable
-      />
 
       {/* Order Details Modal */}
       {showModal && selectedOrder && (
