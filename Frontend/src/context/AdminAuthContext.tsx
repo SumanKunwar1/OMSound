@@ -1,17 +1,15 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-export interface AdminUser {
-  id: string;
+interface AdminUser {
+  _id: string;
   username: string;
   email: string;
   role: 'admin' | 'sub-admin';
+  status: 'active' | 'inactive';
+  createdAt: string;
   firstName: string;
   lastName: string;
-  avatar?: string;
-  permissions: string[];
-  isActive: boolean;
-  lastLogin?: string;
-  createdAt: string;
 }
 
 interface AdminAuthContextType {
@@ -36,88 +34,77 @@ interface AdminAuthProviderProps {
   children: ReactNode;
 }
 
-// Mock admin users
-const mockAdminUsers: AdminUser[] = [
-  {
-    id: '1',
-    username: 'admin',
-    email: 'admin@omsoundnepal.com',
-    role: 'admin',
-    firstName: 'Admin',
-    lastName: 'User',
-    permissions: ['*'], // All permissions
-    isActive: true,
-    createdAt: '2024-01-01'
-  },
-  {
-    id: '2',
-    username: 'subadmin',
-    email: 'subadmin@omsoundnepal.com',
-    role: 'sub-admin',
-    firstName: 'Sub Admin',
-    lastName: 'User',
-    permissions: ['products.read', 'products.write', 'orders.read', 'blog.read', 'blog.write'],
-    isActive: true,
-    createdAt: '2024-01-15'
-  }
-];
-
-function AdminAuthProvider({ children }: AdminAuthProviderProps) {
+export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    try {
-      const savedAdmin = localStorage.getItem('adminUser');
-      if (savedAdmin) {
-        setAdminUser(JSON.parse(savedAdmin));
-      }
-    } catch (error) {
-      console.error('Error loading admin user from localStorage', error);
-    } finally {
-      setIsLoading(false);
+    const savedAdmin = localStorage.getItem('adminUser');
+    if (savedAdmin) {
+      setAdminUser(JSON.parse(savedAdmin));
     }
   }, []);
 
   useEffect(() => {
-    try {
-      if (adminUser) {
-        localStorage.setItem('adminUser', JSON.stringify(adminUser));
-      } else {
-        localStorage.removeItem('adminUser');
-      }
-    } catch (error) {
-      console.error('Error saving admin user to localStorage', error);
+    if (adminUser) {
+      localStorage.setItem('adminUser', JSON.stringify(adminUser));
+    } else {
+      localStorage.removeItem('adminUser');
     }
   }, [adminUser]);
 
+  const hasPermission = (permission: string): boolean => {
+    if (!adminUser) return false;
+    if (adminUser.role === 'admin') return true;
+    
+    const subAdminPermissions = [
+      'dashboard.read',
+      'products.read',
+      'categories.read',
+      'orders.read'
+    ];
+    
+    return subAdminPermissions.includes(permission);
+  };
+
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock authentication
-    const user = mockAdminUsers.find(u => u.username === username);
-    if (user && password === 'admin123') {
-      const updatedUser = { ...user, lastLogin: new Date().toISOString() };
-      setAdminUser(updatedUser);
-      setIsLoading(false);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+
+      if (!data.token || !data.data?.user) {
+        throw new Error('Invalid response from server');
+      }
+
+      localStorage.setItem('adminToken', data.token);
+      setAdminUser(data.data.user);
       return true;
+    } catch (error) {
+      console.error('Admin login error:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
-    return false;
   };
 
   const logout = () => {
     setAdminUser(null);
-  };
-
-  const hasPermission = (permission: string): boolean => {
-    if (!adminUser) return false;
-    if (adminUser.permissions.includes('*')) return true;
-    return adminUser.permissions.includes(permission);
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    navigate('/admin/login');
   };
 
   const value = {
@@ -131,4 +118,6 @@ function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   return <AdminAuthContext.Provider value={value}>{children}</AdminAuthContext.Provider>;
 }
 
+
+ 
 export default AdminAuthProvider;

@@ -1,12 +1,13 @@
+// config/db.config.ts
 import mongoose from 'mongoose';
 import { env } from './env.config';
 
-export const connectDB = async () => {
+export const connectDB = async (): Promise<void> => {
   try {
-    await mongoose.connect(env.MONGO_URI);
-    console.log('MongoDB connected successfully');
+    const conn = await mongoose.connect(env.MONGO_URI);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
+    console.error('Database connection failed:', error);
+    throw error;
   }
 };

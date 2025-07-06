@@ -2,7 +2,7 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { UserPayload } from '../types/express';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'd310a078b9f4161af928b413967081f31dda6c48fdbfc4146c982ced368196dc';
 
 export const generateToken = (payload: { userId: string }): string => {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });

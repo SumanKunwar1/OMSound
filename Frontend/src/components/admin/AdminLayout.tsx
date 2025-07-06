@@ -104,17 +104,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     }
   ];
 
-  const filteredMenuItems = menuItems.filter(item => 
-    hasPermission(item.permission) || hasPermission('*')
-  );
+  const filteredMenuItems = menuItems.filter(item => hasPermission(item.permission));
 
   const handleLogout = () => {
     logout();
   };
 
+  const displayName = `${adminUser.firstName} ${adminUser.lastName}`.trim();
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-navy transform ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       } transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:flex lg:flex-col`}>
@@ -147,9 +146,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         </nav>
       </div>
 
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
-        {/* Top Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center justify-between h-16 px-6">
             <div className="flex items-center">
@@ -188,14 +185,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center">
                     <User size={16} className="text-white" />
                   </div>
-                  <span className="hidden md:block">{adminUser.firstName}</span>
+                  <span className="hidden md:block">{displayName}</span>
                   <ChevronDown size={16} />
                 </button>
 
                 {profileDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                     <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">{adminUser.firstName} {adminUser.lastName}</p>
+                      <p className="text-sm font-medium text-gray-900">{displayName}</p>
                       <p className="text-sm text-gray-500">{adminUser.role}</p>
                     </div>
                     <Link
@@ -219,13 +216,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 p-6 overflow-auto">
           {children || <Outlet />}
         </main>
       </div>
 
-      {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"

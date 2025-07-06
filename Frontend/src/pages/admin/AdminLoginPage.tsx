@@ -20,9 +20,13 @@ const AdminLoginPage = () => {
     e.preventDefault();
     setError('');
     
-    const success = await login(credentials.username, credentials.password);
-    if (!success) {
-      setError('Invalid username or password');
+    try {
+      const success = await login(credentials.username, credentials.password);
+      if (!success) {
+        setError('Invalid username or password');
+      }
+    } catch (err) {
+      setError('An error occurred during login');
     }
   };
 

@@ -1,15 +1,12 @@
-// types/express.d.ts
-import { JwtPayload } from 'jsonwebtoken';
+// types/express.ts
+import { Request } from 'express';
 
-// Define the user payload interface that extends JwtPayload
-export interface UserPayload extends JwtPayload {
+export interface UserPayload {
   userId: string;
-  // Add other properties that your JWT token contains
-  // email?: string;
-  // role?: string;
+  iat?: number;
+  exp?: number;
 }
 
-// Extend the Express Request interface
 declare global {
   namespace Express {
     interface Request {

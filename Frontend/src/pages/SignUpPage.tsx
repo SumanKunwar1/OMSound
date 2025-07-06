@@ -1,6 +1,7 @@
+// SignUpPage.tsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Check } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Check, Phone } from 'lucide-react';
 import SEOHelmet from '../components/seo/SEOHelmet';
 import { seoData } from '../data/seoData';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +12,7 @@ const SignUpPage = () => {
     firstName: '',
     lastName: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: ''
   });
@@ -54,6 +56,12 @@ const SignUpPage = () => {
       newErrors.email = 'Please enter a valid email address';
     }
 
+    if (!formData.phone) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^[0-9]{10,15}$/.test(formData.phone)) {
+      newErrors.phone = 'Please enter a valid phone number (10-15 digits)';
+    }
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
@@ -81,16 +89,24 @@ const SignUpPage = () => {
     
     if (!validateForm()) return;
 
-    const success = await signup({
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email
-    });
-    
-    if (success) {
-      navigate('/dashboard');
-    } else {
-      setErrors({ general: 'Registration failed. Please try again.' });
+    try {
+      const success = await signup({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password
+      });
+      
+      if (success) {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrors({ general: error.message });
+      } else {
+        setErrors({ general: 'Registration failed. Please try again.' });
+      }
     }
   };
 
@@ -216,6 +232,32 @@ const SignUpPage = () => {
                   </div>
                   {errors.email && (
                     <p className="mt-1 text-sm text-red-400">{errors.email}</p>
+                  )}
+                </div>
+
+                {/* Phone Number Field */}
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-ivory mb-2">
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Phone className="h-5 w-5 text-gold/60" />
+                    </div>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-3 bg-navy border rounded-md text-ivory placeholder-ivory/50 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-colors ${
+                        errors.phone ? 'border-red-400' : 'border-gold/30'
+                      }`}
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
+                  {errors.phone && (
+                    <p className="mt-1 text-sm text-red-400">{errors.phone}</p>
                   )}
                 </div>
 

@@ -1,28 +1,44 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+// context/AuthContext.tsx
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export interface User {
-  id: string;
+interface User {
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
-  phone?: string;
-  address?: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
+  phone: string;
+  role: 'customer' | 'admin' | 'sub-admin';
+  status: 'active' | 'inactive' | 'suspended';
   joinedDate: string;
+}
+
+interface AuthResponse {
+  status: string;
+  token?: string;
+  data?: {
+    user: User;
+  };
+  message?: string;
+  error?: {
+    message: string;
+    code?: string;
+  };
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (userData: Omit<User, 'id' | 'joinedDate'>) => Promise<boolean>;
+  token: string | null;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signup: (userData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    password: string;
+  }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
-  updateProfile: (userData: Partial<User>) => Promise<boolean>;
   isLoading: boolean;
+  error: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,106 +57,170 @@ interface AuthProviderProps {
 
 function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load user from localStorage on initial render
+  // Load user and token from localStorage on initial render
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        setIsLoading(true);
+        const savedUser = localStorage.getItem('user');
+        const savedToken = localStorage.getItem('token');
+        
+        if (savedUser && savedToken) {
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
+          setToken(savedToken);
+          
+          // Optional: Validate token with backend
+          await validateToken(savedToken);
+        }
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+        logout();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+  }, []);
+
+  // Save user and token to localStorage whenever they change
   useEffect(() => {
     try {
-      const savedUser = localStorage.getItem('user');
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
+      if (user && token) {
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', token);
+      } else {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
       }
-    } catch (error) {
-      console.error('Error loading user from localStorage', error);
+    } catch (err) {
+      console.error('Error saving auth data:', err);
+    }
+  }, [user, token]);
+
+  const validateToken = async (token: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Token validation failed');
+      }
+
+      return true;
+    } catch (err) {
+      logout();
+      return false;
+    }
+  };
+
+  const handleAuthResponse = (response: Response): Promise<AuthResponse> => {
+    if (!response.ok) {
+      return response.json().then(data => {
+        throw new Error(data.message || data.error?.message || 'Request failed');
+      });
+    }
+    return response.json();
+  };
+
+  const signup = async (userData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    password: string;
+  }): Promise<{ success: boolean; error?: string }> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await handleAuthResponse(response);
+
+      if (!data.token || !data.data?.user) {
+        throw new Error('Invalid response from server');
+      }
+
+      setToken(data.token);
+      setUser(data.data.user);
+      return { success: true };
+    } catch (err: any) {
+      console.error('Signup error:', err);
+      setError(err.message);
+      return { 
+        success: false, 
+        error: err.message || 'Registration failed. Please try again.' 
+      };
     } finally {
       setIsLoading(false);
     }
-  }, []);
-
-  // Save user to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      if (user) {
-        localStorage.setItem('user', JSON.stringify(user));
-      } else {
-        localStorage.removeItem('user');
-      }
-    } catch (error) {
-      console.error('Error saving user to localStorage', error);
-    }
-  }, [user]);
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock successful login
-    const mockUser: User = {
-      id: '1',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: email,
-      phone: '+1 (555) 123-4567',
-      address: {
-        street: '123 Main St',
-        city: 'San Francisco',
-        state: 'CA',
-        zipCode: '94102',
-        country: 'United States'
-      },
-      joinedDate: '2024-01-15'
-    };
-    
-    setUser(mockUser);
-    setIsLoading(false);
-    return true;
   };
 
-  const signup = async (userData: Omit<User, 'id' | 'joinedDate'>): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock successful signup
-    const newUser: User = {
-      ...userData,
-      id: Date.now().toString(),
-      joinedDate: new Date().toISOString().split('T')[0]
-    };
-    
-    setUser(newUser);
-    setIsLoading(false);
-    return true;
+    setError(null);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await handleAuthResponse(response);
+
+      if (!data.token || !data.data?.user) {
+        throw new Error('Invalid response from server');
+      }
+
+      setToken(data.token);
+      setUser(data.data.user);
+      return { success: true };
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.message);
+      return { 
+        success: false, 
+        error: err.message || 'Login failed. Please try again.' 
+      };
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
     setUser(null);
-  };
-
-  const updateProfile = async (userData: Partial<User>): Promise<boolean> => {
-    if (!user) return false;
-    
-    setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const updatedUser = { ...user, ...userData };
-    setUser(updatedUser);
-    setIsLoading(false);
-    return true;
+    setToken(null);
+    setError(null);
   };
 
   const value = {
     user,
+    token,
     login,
     signup,
     logout,
-    updateProfile,
-    isLoading
+    isLoading,
+    error,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

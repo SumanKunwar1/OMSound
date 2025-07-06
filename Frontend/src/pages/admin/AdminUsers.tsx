@@ -1,64 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Shield } from 'lucide-react';
 import DataTable from '../../components/admin/DataTable';
 import { useAdminAuth } from '../../context/AdminAuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface User {
-  id: string;
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
-  phone?: string;
-  role: 'customer' | 'admin' | 'sub-admin';
+  phone: string;
+  role: 'customer' | 'admin' | 'moderator' | 'sub-admin';
   status: 'active' | 'inactive' | 'suspended';
   joinedDate: string;
   lastLogin?: string;
-  totalOrders: number;
-  totalSpent: number;
+  totalOrders?: number;
+  totalSpent?: number;
 }
 
-const mockUsers: User[] = [
-  {
-    id: '1',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    phone: '+1 (555) 123-4567',
-    role: 'customer',
-    status: 'active',
-    joinedDate: '2024-01-15',
-    lastLogin: '2024-01-20',
-    totalOrders: 3,
-    totalSpent: 675
-  },
-  {
-    id: '2',
-    firstName: 'Jane',
-    lastName: 'Smith',
-    email: 'jane@example.com',
-    phone: '+1 (555) 987-6543',
-    role: 'customer',
-    status: 'active',
-    joinedDate: '2024-01-10',
-    lastLogin: '2024-01-19',
-    totalOrders: 1,
-    totalSpent: 285
-  },
-  {
-    id: '3',
-    firstName: 'Admin',
-    lastName: 'User',
-    email: 'admin@omsoundnepal.com',
-    role: 'admin',
-    status: 'active',
-    joinedDate: '2023-12-01',
-    lastLogin: '2024-01-22',
-    totalOrders: 0,
-    totalSpent: 0
-  }
-];
-
 const AdminUsers = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<Partial<User>>({
@@ -69,12 +32,84 @@ const AdminUsers = () => {
     role: 'customer',
     status: 'active'
   });
-  const { hasPermission } = useAdminAuth();
+  
+  const { adminUser } = useAdminAuth();
+  const { token } = useAuth();
+
+  const checkPermission = (permission: string) => {
+    if (!adminUser) return false;
+    
+    switch (permission) {
+      case 'users.write':
+        return adminUser.role === 'admin' || adminUser.role === 'sub-admin';
+      case 'users.delete':
+        return adminUser.role === 'admin';
+      default:
+        return false;
+    }
+  };
+
+  const hasPermission = (permission: string) => checkPermission(permission);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch users');
+      }
+      
+      const data = await response.json();
+      
+      if (!data.data || !data.data.users) {
+        throw new Error('Invalid data format received from API');
+      }
+      
+      const mappedUsers = data.data.users.map((user: any) => ({
+        _id: user._id,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        role: user.role || 'customer',
+        status: user.status || 'active',
+        joinedDate: user.joinedDate || new Date().toISOString(),
+        lastLogin: user.lastLogin || '',
+        totalOrders: user.totalOrders || 0,
+        totalSpent: user.totalSpent || 0
+      }));
+      
+      setUsers(mappedUsers);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchUsers();
+    } else {
+      setError('No authentication token found');
+      setLoading(false);
+    }
+  }, [token]);
 
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin':
         return 'bg-red-100 text-red-800';
+      case 'moderator':
       case 'sub-admin':
         return 'bg-orange-100 text-orange-800';
       case 'customer':
@@ -136,13 +171,14 @@ const AdminUsers = () => {
     {
       key: 'totalOrders',
       label: 'Orders',
-      sortable: true
+      sortable: true,
+      render: (orders: number) => orders || 0
     },
     {
       key: 'totalSpent',
       label: 'Total Spent',
       sortable: true,
-      render: (amount: number) => `$${amount.toFixed(2)}`
+      render: (amount: number) => `$${(amount || 0).toFixed(2)}`
     },
     {
       key: 'joinedDate',
@@ -153,15 +189,35 @@ const AdminUsers = () => {
   ];
 
   const handleEdit = (user: User) => {
+    if (!hasPermission('users.write')) return;
     setEditingUser(user);
     setFormData(user);
     setShowModal(true);
   };
 
-  const handleDelete = (user: User) => {
+  const handleDelete = async (user: User) => {
+    if (!hasPermission('users.delete')) return;
+    
     if (confirm(`Are you sure you want to delete user "${user.firstName} ${user.lastName}"?`)) {
-      console.log('Deleting user:', user.id);
-      alert('User deleted successfully');
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/${user._id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete user');
+        }
+        
+        setUsers(users.filter(u => u._id !== user._id));
+        alert('User deleted successfully');
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Failed to delete user. Please try again.');
+      }
     }
   };
 
@@ -171,27 +227,61 @@ const AdminUsers = () => {
     setShowModal(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingUser) {
-      console.log('Updating user:', editingUser.id, formData);
-      alert('User updated successfully');
-    } else {
-      console.log('Creating new user:', formData);
-      alert('User created successfully');
+    try {
+      if (editingUser) {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/${editingUser._id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update user');
+        }
+
+        const updatedUser = await response.json();
+        setUsers(users.map(u => u._id === editingUser._id ? updatedUser.data.user : u));
+        alert('User updated successfully');
+      } else {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create user');
+        }
+
+        const newUser = await response.json();
+        setUsers([...users, newUser.data.user]);
+        alert('User created successfully');
+      }
+      
+      setShowModal(false);
+      setEditingUser(null);
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        role: 'customer',
+        status: 'active'
+      });
+      fetchUsers();
+    } catch (error) {
+      console.error('Error saving user:', error);
+      alert('Failed to save user. Please try again.');
     }
-    
-    setShowModal(false);
-    setEditingUser(null);
-    setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      role: 'customer',
-      status: 'active'
-    });
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -202,9 +292,49 @@ const AdminUsers = () => {
     }));
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gold"></div>
+        <p className="ml-4">Loading users...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="text-red-500 text-lg font-medium">Error loading users</div>
+        <div className="text-gray-600">{error}</div>
+        <button
+          onClick={fetchUsers}
+          className="px-4 py-2 bg-gold text-white rounded-md hover:bg-gold/90"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (users.length === 0 && !loading && !error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="text-gray-600">No users found</div>
+        {hasPermission('users.write') && (
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center px-4 py-2 bg-gold text-white rounded-md hover:bg-gold/90"
+          >
+            <Plus size={16} className="mr-2" />
+            Add First User
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Users</h1>
@@ -221,13 +351,12 @@ const AdminUsers = () => {
         )}
       </div>
 
-      {/* User Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900">{mockUsers.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{users.length}</p>
             </div>
             <Shield className="text-blue-500" size={24} />
           </div>
@@ -237,7 +366,7 @@ const AdminUsers = () => {
             <div>
               <p className="text-sm text-gray-600">Active Users</p>
               <p className="text-2xl font-bold text-gray-900">
-                {mockUsers.filter(u => u.status === 'active').length}
+                {users.filter(u => u.status === 'active').length}
               </p>
             </div>
             <Shield className="text-green-500" size={24} />
@@ -248,7 +377,7 @@ const AdminUsers = () => {
             <div>
               <p className="text-sm text-gray-600">Customers</p>
               <p className="text-2xl font-bold text-gray-900">
-                {mockUsers.filter(u => u.role === 'customer').length}
+                {users.filter(u => u.role === 'customer').length}
               </p>
             </div>
             <Shield className="text-blue-500" size={24} />
@@ -259,7 +388,7 @@ const AdminUsers = () => {
             <div>
               <p className="text-sm text-gray-600">Admins</p>
               <p className="text-2xl font-bold text-gray-900">
-                {mockUsers.filter(u => u.role === 'admin' || u.role === 'sub-admin').length}
+                {users.filter(u => u.role === 'admin' || u.role === 'moderator' || u.role === 'sub-admin').length}
               </p>
             </div>
             <Shield className="text-red-500" size={24} />
@@ -267,9 +396,8 @@ const AdminUsers = () => {
         </div>
       </div>
 
-      {/* Users Table */}
       <DataTable
-        data={mockUsers}
+        data={users}
         columns={columns}
         onEdit={hasPermission('users.write') ? handleEdit : undefined}
         onDelete={hasPermission('users.delete') ? handleDelete : undefined}
@@ -278,7 +406,6 @@ const AdminUsers = () => {
         filterable
       />
 
-      {/* User Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -357,7 +484,8 @@ const AdminUsers = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
                   >
                     <option value="customer">Customer</option>
-                    <option value="sub-admin">Sub Admin</option>
+                    <option value="moderator">Moderator</option>
+                    <option value="sub-admin">Sub-admin</option>
                     <option value="admin">Admin</option>
                   </select>
                 </div>
@@ -386,13 +514,13 @@ const AdminUsers = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Total Orders
                     </label>
-                    <p className="text-gray-900">{editingUser.totalOrders}</p>
+                    <p className="text-gray-900">{editingUser.totalOrders || 0}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Total Spent
                     </label>
-                    <p className="text-gray-900">${editingUser.totalSpent.toFixed(2)}</p>
+                    <p className="text-gray-900">${(editingUser.totalSpent || 0).toFixed(2)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -411,7 +539,6 @@ const AdminUsers = () => {
                 </div>
               )}
 
-              {/* Form Actions */}
               <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                 <button
                   type="button"

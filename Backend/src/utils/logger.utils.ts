@@ -1,16 +1,24 @@
-import winston from 'winston';
+// utils/logger.utils.ts
+import { createLogger, format, transports } from 'winston';
 
-const logger = winston.createLogger({
+const logger = createLogger({
   level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
+  format: format.combine(
+    format.timestamp(),
+    format.errors({ stack: true }),
+    format.json()
   ),
+  defaultMeta: { service: 'omsound-backend' },
   transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' }),
+    new transports.File({ filename: 'error.log', level: 'error' }),
+    new transports.File({ filename: 'combined.log' }),
   ],
 });
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new transports.Console({
+    format: format.simple()
+  }));
+}
 
 export default logger;
