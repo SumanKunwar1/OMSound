@@ -51,8 +51,7 @@ const DashboardPage = () => {
         <SEOHelmet
           title="Please Log In | OMSound Nepal"
           description="Please log in to access your dashboard"
-          noindex={true}
-        />
+          noindex={true} keywords={''}        />
         <div className="text-center">
           <h2 className="text-2xl font-serif text-charcoal mb-4">Please log in to access your dashboard</h2>
         </div>
@@ -60,8 +59,8 @@ const DashboardPage = () => {
     );
   }
 
-  const orders = getOrdersForUser(user.id);
-  const userReviews = getUserReviews(user.id);
+  const orders = getOrdersForUser(user._id);
+  const userReviews = getUserReviews(user._id);
 
   const handleCancelOrder = (orderId: string) => {
     console.log('Canceling order:', orderId);
@@ -94,7 +93,7 @@ const DashboardPage = () => {
   };
 
   const openReviewModal = (productId: string, orderId: string, productName: string, productImage: string) => {
-    const existingReview = getUserReviewForProduct(user.id, productId, orderId);
+    const existingReview = getUserReviewForProduct(user._id, productId, orderId);
     setReviewModal({
       isOpen: true,
       productId,
@@ -121,7 +120,7 @@ const DashboardPage = () => {
       updateUserReview(reviewModal.existingReview.id, reviewForm);
     } else {
       addUserReview({
-        userId: user.id,
+        userId: user._id,
         productId: reviewModal.productId,
         orderId: reviewModal.orderId,
         productName: reviewModal.productName || '',
@@ -505,7 +504,7 @@ const DashboardPage = () => {
                                       onClick={() => openReviewModal(item.productId, order.id, item.productName, item.productImage)}
                                       className="px-3 py-1 bg-gold/20 text-gold rounded hover:bg-gold/30 text-sm"
                                     >
-                                      {getUserReviewForProduct(user.id, item.productId, order.id) ? 'Edit Review' : 'Write Review'}
+                                      {getUserReviewForProduct(user._id, item.productId, order.id) ? 'Edit Review' : 'Write Review'}
                                     </button>
                                   )}
                                 </div>

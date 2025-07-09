@@ -54,3 +54,20 @@ export const authenticate = (
     });
   }
 };
+
+// Add this new middleware for admin check
+export const isAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  try {
+    // Check if user exists and has admin role
+    if (!req.user || (req.user as any).role !== 'admin') {
+      throw new AppError('Admin access required', 403, 'ADMIN_REQUIRED');
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+};

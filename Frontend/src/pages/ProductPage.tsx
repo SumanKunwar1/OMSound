@@ -1,26 +1,29 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ShoppingCart, Minus, Plus, ArrowLeft, Star } from 'lucide-react';
-import SEOHelmet from '../components/seo/SEOHelmet';
-import { getProductSEO } from '../data/seoData';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-import { products } from '../data/products';
-import ProductImageGallery from '../components/product/ProductImageGallery';
-import ProductReviews from '../components/product/ProductReviews';
-import ProductCard from '../components/shop/ProductCard';
-import LoginModal from '../components/auth/LoginModal';
-import AnimatedSection from '../components/utils/AnimatedSection';
+"use client"
+
+import type React from "react"
+import { useState, useEffect } from "react"
+import { useParams, Link, useNavigate } from "react-router-dom"
+import { ShoppingCart, Minus, Plus, ArrowLeft, Star } from "lucide-react"
+import SEOHelmet from "../components/seo/SEOHelmet"
+import { getProductSEO } from "../data/seoData"
+import { useCart } from "../context/CartContext"
+import { useAuth } from "../context/AuthContext"
+import { productService, type Product } from "../services/product.service"
+import ProductImageGallery from "../components/product/ProductImageGallery"
+import ProductReviews from "../components/product/ProductReviews"
+import ProductCard from "../components/shop/ProductCard"
+import LoginModal from "../components/auth/LoginModal"
+import AnimatedSection from "../components/utils/AnimatedSection"
 
 // Error boundary component for handling component-level errors
 const ErrorBoundary = ({ children, fallback }: { children: React.ReactNode; fallback: React.ReactNode }) => {
   try {
-    return <>{children}</>;
+    return <>{children}</>
   } catch (error) {
-    console.error('ProductPage Error:', error);
-    return <>{fallback}</>;
+    console.error("ProductPage Error:", error)
+    return <>{fallback}</>
   }
-};
+}
 
 // Loading component
 const LoadingSpinner = () => (
@@ -30,7 +33,7 @@ const LoadingSpinner = () => (
       <p className="text-charcoal">Loading product...</p>
     </div>
   </div>
-);
+)
 
 // Error component
 const ErrorDisplay = ({ message, onRetry }: { message: string; onRetry?: () => void }) => (
@@ -50,7 +53,7 @@ const ErrorDisplay = ({ message, onRetry }: { message: string; onRetry?: () => v
       </div>
     </div>
   </div>
-);
+)
 
 // Product not found component
 const ProductNotFound = () => (
@@ -59,6 +62,7 @@ const ProductNotFound = () => (
       title="Product Not Found | OMSound Nepal"
       description="The product you're looking for doesn't exist or has been removed."
       noindex={true}
+      keywords=""
     />
     <div className="container-custom py-16 text-center">
       <h2 className="text-2xl font-serif text-charcoal mb-4">Product Not Found</h2>
@@ -68,60 +72,68 @@ const ProductNotFound = () => (
       </Link>
     </div>
   </div>
-);
+)
 
 const ProductPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<'details' | 'reviews'>('details');
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  const { addToCart } = useCart();
-  const { user } = useAuth();
-  
-  // Enhanced product lookup with error handling
-  const findProduct = () => {
-    try {
-      if (!id) {
-        throw new Error('Product ID is required');
-      }
-      
-      if (!products || !Array.isArray(products)) {
-        throw new Error('Products data is not available');
-      }
-      
-      const product = products.find(p => p?.id === id);
-      
-      if (!product) {
-        throw new Error('Product not found');
-      }
-      
-      // Validate required product properties
-      if (!product.name || !product.price || !product.images || !Array.isArray(product.images)) {
-        throw new Error('Product data is incomplete');
-      }
-      
-      return product;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      setError(errorMessage);
-      return null;
-    }
-  };
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const [quantity, setQuantity] = useState(1)
+  const [activeTab, setActiveTab] = useState<"details" | "reviews">("details")
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [product, setProduct] = useState<Product | null>(null)
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
 
-  const product = findProduct();
-  
+  const { addToCart } = useCart()
+  const { user } = useAuth()
+
+  // Fetch product data
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 100); // Small delay to prevent flash
+    const fetchProduct = async () => {
+      if (!id) {
+        setError("Product ID is required")
+        setIsLoading(false)
+        return
+      }
 
-    window.scrollTo(0, 0);
-    
-    return () => clearTimeout(timer);
-  }, [id]);
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        // Fetch the specific product
+        const productData = await productService.getProductById(id)
+        setProduct(productData)
+
+        // Fetch all products for related products
+        const allProducts = await productService.getProductsForShop()
+
+        // Get related products
+        let related = allProducts
+          .filter((p) => p.category === productData.category && p.id !== productData.id)
+          .slice(0, 4)
+
+        // If not enough in same category, fill with other products
+        if (related.length < 4) {
+          const additional = allProducts
+            .filter((p) => p.id !== productData.id && !related.some((rp) => rp.id === p.id))
+            .slice(0, 4 - related.length)
+          related = [...related, ...additional]
+        }
+
+        setRelatedProducts(related)
+      } catch (err) {
+        console.error("Error fetching product:", err)
+        const errorMessage = err instanceof Error ? err.message : "Failed to load product"
+        setError(errorMessage)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchProduct()
+    window.scrollTo(0, 0)
+  }, [id])
 
   // Safe SEO data generation
   const getSafeSEO = () => {
@@ -133,205 +145,175 @@ const ProductPage = () => {
           keywords: "",
           image: "",
           type: "website" as const,
-          structuredData: undefined
-        };
+          structuredData: undefined,
+        }
       }
-      
-      return getProductSEO(
-        product.name, 
-        product.description, 
-        product.price, 
-        product.images?.[0] || ''
-      );
+
+      return getProductSEO(product.name, product.description, product.price, product.images?.[0] || "")
     } catch (err) {
-      console.error('SEO generation error:', err);
+      console.error("SEO generation error:", err)
       return {
         title: "OMSound Nepal",
         description: "Authentic Tibetan singing bowls and sound healing instruments",
         keywords: "",
         image: "",
         type: "website" as const,
-        structuredData: undefined
-      };
+        structuredData: undefined,
+      }
     }
-  };
+  }
 
-  const seo = getSafeSEO();
+  const seo = getSafeSEO()
 
   // Safe quantity handlers
   const decreaseQuantity = () => {
     try {
-      setQuantity(prev => Math.max(1, prev - 1));
+      setQuantity((prev) => Math.max(1, prev - 1))
     } catch (err) {
-      console.error('Error decreasing quantity:', err);
+      console.error("Error decreasing quantity:", err)
     }
-  };
+  }
 
   const increaseQuantity = () => {
     try {
-      setQuantity(prev => prev + 1);
+      setQuantity((prev) => prev + 1)
     } catch (err) {
-      console.error('Error increasing quantity:', err);
+      console.error("Error increasing quantity:", err)
     }
-  };
+  }
 
   // Safe cart handlers with error handling
   const handleAddToCart = () => {
     try {
       if (!user) {
-        setShowLoginModal(true);
-        return;
+        setShowLoginModal(true)
+        return
       }
-      
+
       if (!product) {
-        throw new Error('Product data is not available');
+        throw new Error("Product data is not available")
       }
-      
+
       // Create product with required image property for cart
       const productForCart = {
         ...product,
-        image: product.images?.[0] || '' // Use first image or empty string as fallback
-      };
-      
-      addToCart(productForCart, quantity);
-      
+        image: product.images?.[0] || "", // Use first image or empty string as fallback
+      }
+
+      addToCart(productForCart, quantity)
+
       // Show success message (optional)
-      console.log('Product added to cart successfully');
+      console.log("Product added to cart successfully")
     } catch (err) {
-      console.error('Error adding to cart:', err);
-      setError('Failed to add product to cart. Please try again.');
+      console.error("Error adding to cart:", err)
+      setError("Failed to add product to cart. Please try again.")
     }
-  };
+  }
 
   const handleBuyNow = () => {
     try {
       if (!user) {
-        setShowLoginModal(true);
-        return;
+        setShowLoginModal(true)
+        return
       }
-      
+
       if (!product) {
-        throw new Error('Product data is not available');
+        throw new Error("Product data is not available")
       }
-      
+
       // Create product with required image property for cart
       const productForCart = {
         ...product,
-        image: product.images?.[0] || '' // Use first image or empty string as fallback
-      };
-      
-      addToCart(productForCart, quantity);
-      
-      // Navigate to cart page
-      window.location.href = '/cart';
+        image: product.images?.[0] || "", // Use first image or empty string as fallback
+      }
+
+      // Add product to cart with selected quantity
+      addToCart(productForCart, quantity)
+
+      // Navigate to cart page after adding to cart
+      navigate("/cart")
     } catch (err) {
-      console.error('Error with buy now:', err);
-      setError('Failed to process purchase. Please try again.');
+      console.error("Error with buy now:", err)
+      setError("Failed to process purchase. Please try again.")
     }
-  };
+  }
 
   const handleLoginSuccess = () => {
     try {
       if (!product) {
-        throw new Error('Product data is not available');
+        throw new Error("Product data is not available")
       }
-      
+
       // Create product with required image property for cart
       const productForCart = {
         ...product,
-        image: product.images?.[0] || '' // Use first image or empty string as fallback
-      };
-      
-      addToCart(productForCart, quantity);
+        image: product.images?.[0] || "", // Use first image or empty string as fallback
+      }
+
+      addToCart(productForCart, quantity)
     } catch (err) {
-      console.error('Error after login:', err);
-      setError('Failed to add product to cart after login.');
+      console.error("Error after login:", err)
+      setError("Failed to add product to cart after login.")
     }
-  };
+  }
 
   // Safe star rendering
   const renderStars = (rating: number) => {
     try {
-      const safeRating = typeof rating === 'number' && !isNaN(rating) ? rating : 0;
-      
+      const safeRating = typeof rating === "number" && !isNaN(rating) ? rating : 0
+
       return Array.from({ length: 5 }, (_, index) => (
         <Star
           key={index}
           size={16}
           className={`${
             index < Math.floor(safeRating)
-              ? 'text-gold fill-gold'
+              ? "text-gold fill-gold"
               : index < safeRating
-              ? 'text-gold fill-gold opacity-50'
-              : 'text-gold/30'
+                ? "text-gold fill-gold opacity-50"
+                : "text-gold/30"
           }`}
         />
-      ));
+      ))
     } catch (err) {
-      console.error('Error rendering stars:', err);
-      return null;
+      console.error("Error rendering stars:", err)
+      return null
     }
-  };
-
-  // Safe related products calculation
-  const getRelatedProducts = () => {
-    try {
-      if (!product || !products || !Array.isArray(products)) {
-        return [];
-      }
-
-      let relatedProducts = products
-        .filter(p => p?.category === product.category && p?.id !== product.id)
-        .slice(0, 4);
-
-      // If not enough in same category, fill with other products
-      if (relatedProducts.length < 4) {
-        const additionalProducts = products
-          .filter(p => p?.id !== product.id && !relatedProducts.some(rp => rp?.id === p?.id))
-          .slice(0, 4 - relatedProducts.length);
-        relatedProducts = [...relatedProducts, ...additionalProducts];
-      }
-
-      return relatedProducts;
-    } catch (err) {
-      console.error('Error getting related products:', err);
-      return [];
-    }
-  };
-
-  const relatedProducts = getRelatedProducts();
+  }
 
   const retryLoad = () => {
-    setError(null);
-    setIsLoading(true);
-    window.location.reload();
-  };
+    setError(null)
+    setIsLoading(true)
+    window.location.reload()
+  }
 
   // Loading state
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner />
   }
 
   // Error state
   if (error && !product) {
-    return <ErrorDisplay message={error} onRetry={retryLoad} />;
+    return <ErrorDisplay message={error} onRetry={retryLoad} />
   }
 
   // Product not found
   if (!product) {
-    return <ProductNotFound />;
+    return <ProductNotFound />
   }
 
   return (
-    <ErrorBoundary 
-      fallback={<ErrorDisplay message="An unexpected error occurred while displaying the product." onRetry={retryLoad} />}
+    <ErrorBoundary
+      fallback={
+        <ErrorDisplay message="An unexpected error occurred while displaying the product." onRetry={retryLoad} />
+      }
     >
       <div className="min-h-screen pt-24 bg-navy">
         <SEOHelmet
           title={seo.title}
           description={seo.description}
-          keywords={seo.keywords || ''}
-          image={seo.image || ''}
+          keywords={seo.keywords || ""}
+          image={seo.image || ""}
           type={seo.type}
           structuredData={seo.structuredData}
           url={`https://omsoundnepal.com/product/${product.id}`}
@@ -341,10 +323,7 @@ const ProductPage = () => {
         {error && (
           <div className="bg-red-500 text-white p-4 text-center">
             <p>{error}</p>
-            <button 
-              onClick={() => setError(null)} 
-              className="ml-4 underline hover:no-underline"
-            >
+            <button onClick={() => setError(null)} className="ml-4 underline hover:no-underline">
               Dismiss
             </button>
           </div>
@@ -356,14 +335,18 @@ const ProductPage = () => {
             <ArrowLeft size={16} className="mr-1" />
             Back to Shop
           </Link>
-          
+
           {/* Product details */}
           <div className="bg-navy/50 rounded-lg overflow-hidden shadow-lg mb-16">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
               {/* Product images */}
               <div>
-                <ErrorBoundary fallback={<div className="bg-gray-200 h-96 rounded flex items-center justify-center">Image unavailable</div>}>
-                  <ProductImageGallery 
+                <ErrorBoundary
+                  fallback={
+                    <div className="bg-gray-200 h-96 rounded flex items-center justify-center">Image unavailable</div>
+                  }
+                >
+                  <ProductImageGallery
                     images={product.images || []}
                     video={product.video}
                     audio={product.audio}
@@ -371,23 +354,21 @@ const ProductPage = () => {
                   />
                 </ErrorBoundary>
               </div>
-              
+
               {/* Product info */}
               <div>
                 <AnimatedSection>
                   <div className="mb-4">
                     <span className="text-sm bg-gold/20 text-gold px-3 py-1 rounded-full">
-                      {product.category || 'Uncategorized'}
+                      {product.category || "Uncategorized"}
                     </span>
                   </div>
 
                   <h1 className="font-serif text-3xl lg:text-4xl text-gold mb-4">{product.name}</h1>
-                  
+
                   {/* Rating */}
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="flex items-center">
-                      {renderStars(product.rating || 0)}
-                    </div>
+                    <div className="flex items-center">{renderStars(product.rating || 0)}</div>
                     <span className="text-ivory/70">
                       {(product.rating || 0).toFixed(1)} ({product.reviewCount || 0} reviews)
                     </span>
@@ -396,41 +377,31 @@ const ProductPage = () => {
                   <div className="mb-6">
                     <span className="text-3xl font-serif text-ivory">${product.price}</span>
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-2 mb-6">
                     {product.size && (
-                      <span className="text-sm bg-gold/20 text-gold px-3 py-1 rounded-full">
-                        {product.size}
-                      </span>
+                      <span className="text-sm bg-gold/20 text-gold px-3 py-1 rounded-full">{product.size}</span>
                     )}
                     {product.tone && (
-                      <span className="text-sm bg-gold/20 text-gold px-3 py-1 rounded-full">
-                        {product.tone} Tone
-                      </span>
+                      <span className="text-sm bg-gold/20 text-gold px-3 py-1 rounded-full">{product.tone} Tone</span>
                     )}
                     {product.musicalNote && (
-                      <span className="text-sm bg-gold/20 text-gold px-3 py-1 rounded-full">
-                        {product.musicalNote}
-                      </span>
+                      <span className="text-sm bg-gold/20 text-gold px-3 py-1 rounded-full">{product.musicalNote}</span>
                     )}
                     {product.type && (
-                      <span className="text-sm bg-gold/20 text-gold px-3 py-1 rounded-full">
-                        {product.type}
-                      </span>
+                      <span className="text-sm bg-gold/20 text-gold px-3 py-1 rounded-full">{product.type}</span>
                     )}
                   </div>
-                  
-                  <p className="text-ivory/80 mb-8 text-lg leading-relaxed">
-                    {product.description}
-                  </p>
-                  
+
+                  <p className="text-ivory/80 mb-8 text-lg leading-relaxed">{product.description}</p>
+
                   {product.inStock ? (
                     <>
                       {/* Quantity selector */}
                       <div className="flex items-center mb-6">
                         <span className="text-ivory mr-4">Quantity:</span>
                         <div className="flex items-center">
-                          <button 
+                          <button
                             onClick={decreaseQuantity}
                             className="p-2 bg-charcoal text-ivory rounded-l-md hover:bg-charcoal/80 transition-colors"
                             disabled={quantity <= 1}
@@ -440,7 +411,7 @@ const ProductPage = () => {
                           <div className="w-16 bg-navy text-ivory py-2 text-center font-medium border-t border-b border-charcoal/20">
                             {quantity}
                           </div>
-                          <button 
+                          <button
                             onClick={increaseQuantity}
                             className="p-2 bg-charcoal text-ivory rounded-r-md hover:bg-charcoal/80 transition-colors"
                           >
@@ -448,10 +419,10 @@ const ProductPage = () => {
                           </button>
                         </div>
                       </div>
-                      
+
                       {/* Action buttons */}
                       <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                        <button 
+                        <button
                           onClick={handleAddToCart}
                           className="flex-1 btn-primary flex items-center justify-center"
                           disabled={!product.inStock}
@@ -459,7 +430,7 @@ const ProductPage = () => {
                           <ShoppingCart size={18} className="mr-2" />
                           Add to Cart
                         </button>
-                        <button 
+                        <button
                           onClick={handleBuyNow}
                           className="flex-1 bg-gold text-charcoal py-3 px-6 rounded-md font-medium hover:bg-opacity-90 transition-colors"
                           disabled={!product.inStock}
@@ -478,7 +449,7 @@ const ProductPage = () => {
                       </p>
                     </div>
                   )}
-                  
+
                   {/* Shipping note */}
                   <div className="flex items-center justify-center py-3 px-4 bg-navy/30 rounded-md text-sm text-ivory/70">
                     <span>Free worldwide shipping on orders over $100</span>
@@ -492,28 +463,24 @@ const ProductPage = () => {
           <div className="mb-16">
             <div className="flex border-b border-gold/20 mb-8">
               <button
-                onClick={() => setActiveTab('details')}
+                onClick={() => setActiveTab("details")}
                 className={`px-6 py-3 font-medium transition-colors ${
-                  activeTab === 'details'
-                    ? 'text-gold border-b-2 border-gold'
-                    : 'text-ivory/70 hover:text-ivory'
+                  activeTab === "details" ? "text-gold border-b-2 border-gold" : "text-ivory/70 hover:text-ivory"
                 }`}
               >
                 Product Details
               </button>
               <button
-                onClick={() => setActiveTab('reviews')}
+                onClick={() => setActiveTab("reviews")}
                 className={`px-6 py-3 font-medium transition-colors ${
-                  activeTab === 'reviews'
-                    ? 'text-gold border-b-2 border-gold'
-                    : 'text-ivory/70 hover:text-ivory'
+                  activeTab === "reviews" ? "text-gold border-b-2 border-gold" : "text-ivory/70 hover:text-ivory"
                 }`}
               >
                 Reviews ({product.reviewCount || 0})
               </button>
             </div>
 
-            {activeTab === 'details' ? (
+            {activeTab === "details" ? (
               <AnimatedSection>
                 <div className="bg-navy/30 rounded-lg p-8">
                   <h3 className="font-serif text-2xl text-ivory mb-6">Product Specifications</h3>
@@ -526,30 +493,37 @@ const ProductPage = () => {
                             <span className="text-gold mr-3">•</span>
                             <span>{detail}</span>
                           </li>
-                        )) || (
-                          <li className="text-ivory/60">No details available</li>
-                        )}
+                        )) || <li className="text-ivory/60">No details available</li>}
                       </ul>
                     </div>
                     <div>
                       <h4 className="font-serif text-lg text-gold mb-4">Care Instructions</h4>
                       <ul className="space-y-3 text-ivory/80">
-                        <li className="flex items-baseline">
-                          <span className="text-gold mr-3">•</span>
-                          <span>Clean with a soft, dry cloth after use</span>
-                        </li>
-                        <li className="flex items-baseline">
-                          <span className="text-gold mr-3">•</span>
-                          <span>Store on provided cushion in a dry place</span>
-                        </li>
-                        <li className="flex items-baseline">
-                          <span className="text-gold mr-3">•</span>
-                          <span>Avoid extreme temperatures and humidity</span>
-                        </li>
-                        <li className="flex items-baseline">
-                          <span className="text-gold mr-3">•</span>
-                          <span>Use lemon juice sparingly to remove tarnish</span>
-                        </li>
+                        {product.careInstructions?.map((instruction, index) => (
+                          <li key={index} className="flex items-baseline">
+                            <span className="text-gold mr-3">•</span>
+                            <span>{instruction}</span>
+                          </li>
+                        )) || (
+                          <>
+                            <li className="flex items-baseline">
+                              <span className="text-gold mr-3">•</span>
+                              <span>Clean with a soft, dry cloth after use</span>
+                            </li>
+                            <li className="flex items-baseline">
+                              <span className="text-gold mr-3">•</span>
+                              <span>Store on provided cushion in a dry place</span>
+                            </li>
+                            <li className="flex items-baseline">
+                              <span className="text-gold mr-3">•</span>
+                              <span>Avoid extreme temperatures and humidity</span>
+                            </li>
+                            <li className="flex items-baseline">
+                              <span className="text-gold mr-3">•</span>
+                              <span>Use lemon juice sparingly to remove tarnish</span>
+                            </li>
+                          </>
+                        )}
                       </ul>
                     </div>
                   </div>
@@ -561,7 +535,7 @@ const ProductPage = () => {
               </ErrorBoundary>
             )}
           </div>
-          
+
           {/* Related products */}
           {relatedProducts.length > 0 && (
             <div>
@@ -580,13 +554,9 @@ const ProductPage = () => {
         </div>
       </div>
 
-      <LoginModal 
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onSuccess={handleLoginSuccess}
-      />
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} onSuccess={handleLoginSuccess} />
     </ErrorBoundary>
-  );
-};
+  )
+}
 
-export default ProductPage;
+export default ProductPage

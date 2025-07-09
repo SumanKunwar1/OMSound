@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Eye, Image, ExternalLink } from 'lucide-react';
+import { Plus, ExternalLink } from 'lucide-react';
 import DataTable from '../../components/admin/DataTable';
 import { mockSliders, Slider } from '../../data/adminData';
 import { useAdminAuth } from '../../context/AdminAuthContext';

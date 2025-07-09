@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+// context/AdminAuthContext.tsx
+import { createContext, useContext, useState, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface AdminUser {
@@ -18,6 +19,7 @@ interface AdminAuthContextType {
   logout: () => void;
   isLoading: boolean;
   hasPermission: (permission: string) => boolean;
+  token: string | null;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
@@ -37,60 +39,33 @@ interface AdminAuthProviderProps {
 export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [token, setToken] = useState<string | null>('dummy-token');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const savedAdmin = localStorage.getItem('adminUser');
-    if (savedAdmin) {
-      setAdminUser(JSON.parse(savedAdmin));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (adminUser) {
-      localStorage.setItem('adminUser', JSON.stringify(adminUser));
-    } else {
-      localStorage.removeItem('adminUser');
-    }
-  }, [adminUser]);
-
+  // Simplified permission system - always return true for all permissions
   const hasPermission = (permission: string): boolean => {
-    if (!adminUser) return false;
-    if (adminUser.role === 'admin') return true;
-    
-    const subAdminPermissions = [
-      'dashboard.read',
-      'products.read',
-      'categories.read',
-      'orders.read'
-    ];
-    
-    return subAdminPermissions.includes(permission);
+    return true;
   };
 
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const data = await response.json();
-
-      if (!data.token || !data.data?.user) {
-        throw new Error('Invalid response from server');
-      }
-
-      localStorage.setItem('adminToken', data.token);
-      setAdminUser(data.data.user);
+      // Mock login with demo credentials
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const mockAdminUser: AdminUser = {
+        _id: '1',
+        username: username,
+        email: `${username}@omsound.com`,
+        role: 'admin',
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        firstName: 'Admin',
+        lastName: 'User'
+      };
+      
+      setAdminUser(mockAdminUser);
+      setToken('dummy-admin-token');
       return true;
     } catch (error) {
       console.error('Admin login error:', error);
@@ -102,8 +77,7 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
 
   const logout = () => {
     setAdminUser(null);
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminUser');
+    setToken(null);
     navigate('/admin/login');
   };
 
@@ -112,12 +86,11 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
     login,
     logout,
     isLoading,
-    hasPermission
+    hasPermission,
+    token
   };
 
   return <AdminAuthContext.Provider value={value}>{children}</AdminAuthContext.Provider>;
 }
 
-
- 
 export default AdminAuthProvider;

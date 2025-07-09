@@ -1,239 +1,194 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
-import SEOHelmet from '../components/seo/SEOHelmet';
-import { seoData } from '../data/seoData';
-import { useAuth } from '../context/AuthContext';
-import AnimatedSection from '../components/utils/AnimatedSection';
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { Link, useNavigate, useLocation } from "react-router-dom"
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react"
+import { useAuth } from "../context/AuthContext"
+import SEOHelmet from "../components/seo/SEOHelmet"
+import AnimatedSection from "../components/utils/AnimatedSection"
 
 const LoginPage = () => {
+  const { login, user, isLoading, error } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
-  const { login, isLoading } = useAuth();
-  const navigate = useNavigate();
-  const seo = seoData.login;
+    email: "",
+    password: "",
+  })
+  const [showPassword, setShowPassword] = useState(false)
+  const [loginError, setLoginError] = useState("")
+
+  // Get the intended destination from location state
+  const from = location.state?.from?.pathname || "/dashboard"
+
+  useEffect(() => {
+    // Redirect if already logged in
+    if (user) {
+      navigate(from, { replace: true })
+    }
+  }, [user, navigate, from])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
+    const { name, value } = e.target
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
-    }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: {[key: string]: string} = {};
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+      [name]: value,
+    }))
+    // Clear errors when user starts typing
+    if (loginError) setLoginError("")
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
+    e.preventDefault()
+    setLoginError("")
 
-    const success = await login(formData.email, formData.password);
-    if (success) {
-      navigate('/dashboard');
-    } else {
-      setErrors({ general: 'Invalid email or password' });
+    if (!formData.email || !formData.password) {
+      setLoginError("Please fill in all fields")
+      return
     }
-  };
+
+    try {
+      const success = await login(formData.email, formData.password)
+      if (success) {
+        // Navigate to intended destination or dashboard
+        navigate(from, { replace: true })
+      } else {
+        setLoginError("Invalid email or password")
+      }
+    } catch (err) {
+      setLoginError("Login failed. Please try again.")
+    }
+  }
 
   return (
-    <div className="min-h-screen pt-24 bg-gradient-to-br from-navy via-navy/95 to-charcoal">
+    <div className="min-h-screen pt-24 bg-gray-50">
       <SEOHelmet
-        title={seo.title}
-        description={seo.description}
-        keywords={seo.keywords}
-        type={seo.type}
-        noindex={seo.noindex}
-        url="https://omsoundnepal.com/login"
-      />
+        title="Sign In | OMSound Nepal"
+        description="Sign in to your account to access your cart and complete your purchase" keywords={""}      />
 
-      <div className="container-custom py-16">
-        <div className="max-w-md mx-auto">
-          <AnimatedSection>
-            <div className="bg-navy/50 backdrop-blur-sm border border-gold/20 rounded-lg shadow-xl p-8">
-              {/* Header */}
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-serif text-gold mb-2">Welcome Back</h1>
-                <p className="text-ivory/80">Sign in to your OMSound Nepal account</p>
+      <div className="container mx-auto px-4 py-8 max-w-md">
+        <AnimatedSection>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-serif text-charcoal mb-2">Welcome Back</h1>
+              <p className="text-charcoal/70">Sign in to continue your shopping</p>
+            </div>
+
+            {/* Show message if redirected from checkout */}
+            {location.state?.from?.pathname === "/checkout" && (
+              <div className="mb-6 p-4 bg-gold/10 border border-gold/20 rounded-lg">
+                <p className="text-gold text-sm font-medium">Please sign in to complete your checkout</p>
+              </div>
+            )}
+
+            {(loginError || error) && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-700 text-sm">{loginError || error}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-charcoal mb-2">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-charcoal/40" />
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
               </div>
 
-              {/* Login Form */}
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {errors.general && (
-                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    {errors.general}
-                  </div>
-                )}
-
-                {/* Email Field */}
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-ivory mb-2">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-gold/60" />
-                    </div>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 bg-navy border rounded-md text-ivory placeholder-ivory/50 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-colors ${
-                        errors.email ? 'border-red-400' : 'border-gold/30'
-                      }`}
-                      placeholder="Enter your email"
-                    />
-                  </div>
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-400">{errors.email}</p>
-                  )}
-                </div>
-
-                {/* Password Field */}
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-ivory mb-2">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-gold/60" />
-                    </div>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      id="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-12 py-3 bg-navy border rounded-md text-ivory placeholder-ivory/50 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-colors ${
-                        errors.password ? 'border-red-400' : 'border-gold/30'
-                      }`}
-                      placeholder="Enter your password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gold/60 hover:text-gold transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <p className="mt-1 text-sm text-red-400">{errors.password}</p>
-                  )}
-                </div>
-
-                {/* Remember Me & Forgot Password */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <input
-                      id="remember-me"
-                      name="remember-me"
-                      type="checkbox"
-                      className="h-4 w-4 text-gold border-gold/30 rounded focus:ring-gold"
-                    />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-ivory/80">
-                      Remember me
-                    </label>
-                  </div>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-charcoal mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-charcoal/40" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
+                    placeholder="Enter your password"
+                    required
+                  />
                   <button
                     type="button"
-                    className="text-sm text-gold hover:text-gold/80 transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-charcoal/40 hover:text-charcoal/60"
                   >
-                    Forgot password?
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full btn-primary flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-charcoal mr-2"></div>
-                      Signing in...
-                    </>
-                  ) : (
-                    <>
-                      Sign In
-                      <ArrowRight size={18} className="ml-2" />
-                    </>
-                  )}
-                </button>
-              </form>
-
-              {/* Divider */}
-              <div className="my-6">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gold/20"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-navy/50 text-ivory/60">Don't have an account?</span>
-                  </div>
                 </div>
               </div>
 
-              {/* Sign Up Link */}
-              <div className="text-center">
-                <Link
-                  to="/signup"
-                  className="text-gold hover:text-gold/80 transition-colors font-medium"
-                >
-                  Create a new account
+              <div className="flex items-center justify-between">
+                <label className="flex items-center">
+                  <input type="checkbox" className="w-4 h-4 text-gold border-gray-300 rounded focus:ring-gold" />
+                  <span className="ml-2 text-sm text-charcoal/70">Remember me</span>
+                </label>
+                <Link to="/forgot-password" className="text-sm text-gold hover:text-gold/80">
+                  Forgot password?
                 </Link>
               </div>
 
-              {/* Additional Links */}
-              <div className="mt-8 pt-6 border-t border-gold/20 text-center">
-                <p className="text-ivory/60 text-sm mb-4">
-                  By signing in, you agree to our{' '}
-                  <Link to="/terms" className="text-gold hover:text-gold/80 transition-colors">
-                    Terms of Service
-                  </Link>{' '}
-                  and{' '}
-                  <Link to="/privacy" className="text-gold hover:text-gold/80 transition-colors">
-                    Privacy Policy
-                  </Link>
-                </p>
-              </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-gold hover:bg-gold/90 text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Signing In...
+                  </>
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight size={18} className="ml-2" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-8 text-center">
+              <p className="text-charcoal/70">
+                Don't have an account?{" "}
+                <Link
+                  to="/signup"
+                  state={{ from: location.state?.from }}
+                  className="text-gold hover:text-gold/80 font-medium"
+                >
+                  Sign up here
+                </Link>
+              </p>
             </div>
-          </AnimatedSection>
-        </div>
+
+            {/* Demo Credentials */}
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-700 font-medium mb-2">Demo Credentials:</p>
+              <p className="text-xs text-blue-600">Email: test@example.com</p>
+              <p className="text-xs text-blue-600">Password: password</p>
+            </div>
+          </div>
+        </AnimatedSection>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default LoginPage;
+export default LoginPage

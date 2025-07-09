@@ -7,6 +7,13 @@ interface User {
   lastName: string;
   email: string;
   phone: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
   role: 'customer' | 'admin' | 'sub-admin';
   status: 'active' | 'inactive' | 'suspended';
   joinedDate: string;
@@ -37,6 +44,7 @@ interface AuthContextType {
     password: string;
   }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
+  updateProfile: (profileData: Partial<User>) => Promise<boolean>;
   isLoading: boolean;
   error: string | null;
 }
@@ -207,6 +215,39 @@ function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const updateProfile = async (profileData: Partial<User>): Promise<boolean> => {
+    if (!token) return false;
+    
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/me`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(profileData),
+      });
+
+      const data = await handleAuthResponse(response);
+
+      if (!data.data?.user) {
+        throw new Error('Invalid response from server');
+      }
+
+      setUser(data.data.user);
+      return true;
+    } catch (err: any) {
+      console.error('Update profile error:', err);
+      setError(err.message);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -219,6 +260,7 @@ function AuthProvider({ children }: AuthProviderProps) {
     login,
     signup,
     logout,
+    updateProfile,
     isLoading,
     error,
   };

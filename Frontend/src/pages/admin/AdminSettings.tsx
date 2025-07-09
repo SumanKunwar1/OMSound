@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Save, Upload, Globe, Mail, Phone, MapPin, Clock, Shield, Bell, Palette } from 'lucide-react';
+import { useState } from 'react';
+import { Save, Globe, Mail, MapPin, Shield } from 'lucide-react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 
 interface Settings {

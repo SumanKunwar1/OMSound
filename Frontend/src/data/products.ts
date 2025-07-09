@@ -16,6 +16,10 @@ export interface Product {
   reviewCount: number;
   brand: string;
   category: string;
+
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
 }
 
 export const products: Product[] = [

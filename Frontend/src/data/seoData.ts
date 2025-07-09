@@ -1,11 +1,17 @@
 export interface PageSEO {
-  noindex: boolean | undefined;
+  noindex?: boolean;
   title: string;
   description: string;
   keywords: string;
   image?: string;
   type?: string;
   structuredData?: object;
+  url?: string;
+  twitterCard?: string;
+  twitterSite?: string;
+  twitterCreator?: string;
+  schemaType?: string;
+  
 }
 
 export const seoData: Record<string, PageSEO> = {
@@ -165,6 +171,24 @@ export const seoData: Record<string, PageSEO> = {
     description: "Manage your OMSound Nepal account, view order history, track shipments, and access your sound healing journey.",
     keywords: "account dashboard, order history, profile management, singing bowl orders",
     type: "website",
+    noindex: true
+  },
+  adminProducts: {
+    title: "Admin Products | OMSound Nepal",
+    description: "Manage your product catalog in the OMSound Nepal admin panel",
+    keywords: "admin, products, manage, singing bowls",
+    image: "/images/admin-preview.jpg",
+    type: "website",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Admin Products",
+      "description": "Product management page for OMSound Nepal"
+    },
+    twitterCard: "summary_large_image",
+    twitterSite: "@omsoundnepal",
+    twitterCreator: "@omsoundnepal",
+    schemaType: "WebPage",
     noindex: true
   }
 };
