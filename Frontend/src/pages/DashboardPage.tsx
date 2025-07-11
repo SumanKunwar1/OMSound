@@ -5,7 +5,7 @@ import SEOHelmet from "../components/seo/SEOHelmet"
 import { seoData } from "../data/seoData"
 import { useAuth } from "../context/AuthContext"
 import { useCart } from "../context/CartContext"
-import { orderService } from "../services/orderServices" // Keep this for cancelOrder
+import { orderService } from "../services/orderServices"
 import {
   getUserReviews,
   getUserReviewForProduct,
@@ -39,8 +39,9 @@ import {
 import AnimatedSection from "../components/utils/AnimatedSection"
 import { canShowPurchasedProducts } from "../utils/order-helper"
 import axios from "axios"
-import { API_URL } from "../config" // Assuming you have a config file for API_URL
+import { API_URL } from "../config"
 import { Link } from "react-router-dom"
+import type { Order } from "../types/order" // Import Order from the new central file
 
 // Define proper interfaces for form data
 interface ProfileFormData {
@@ -58,42 +59,9 @@ interface ProfileFormData {
   joinedDate?: string
 }
 
-interface Order {
-  id: string // Changed from _id to id to match backend response
-  userId: string
-  items: Array<{
-    productId: string
-    productName: string
-    productImage: string
-    quantity: number
-    price: number
-  }>
-  shippingAddress: {
-    firstName: string
-    lastName: string
-    email: string
-    phone: string
-    street: string
-    city: string
-    state: string
-    zipCode: string
-    country: string
-  }
-  paymentMethod: "cod" | "paypal"
-  subtotal: number
-  deliveryCharge: number
-  tax: number
-  totalAmount: number
-  status: string
-  orderDate: string
-  estimatedDelivery: string
-  trackingNumber?: string
-}
-
 const DashboardPage = () => {
   const { user, updateProfile, logout } = useAuth()
   const { cart, removeFromCart, updateQuantity } = useCart()
-  // Removed `useOrder` import as it's no longer used for fetching orders here.
   const [activeTab, setActiveTab] = useState<
     "overview" | "products" | "cart" | "orders" | "reviews" | "profile" | "settings"
   >("overview")
@@ -113,6 +81,12 @@ const DashboardPage = () => {
   }>({ isOpen: false })
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" })
   const seo = seoData.dashboard
+  const [productsTabActive, setProductsTabActive] = useState(false) // Moved here to be at the top level
+
+  // Calculate purchased products count - using helper function
+  const purchasedProductsCount = orders
+    .filter((order) => canShowPurchasedProducts(order.status))
+    .reduce((total, order) => total + order.items.length, 0)
 
   // Fetch real orders from backend
   useEffect(() => {
@@ -157,6 +131,10 @@ const DashboardPage = () => {
               orderDate: order.orderDate || order.createdAt, // Use 'orderDate' if present, fallback to 'createdAt'
               estimatedDelivery: order.estimatedDelivery,
               trackingNumber: order.trackingNumber,
+              isPaid: order.isPaid,
+              paidAt: order.paidAt,
+              isDelivered: order.isDelivered,
+              deliveredAt: order.deliveredAt,
             }))
           : []
 
@@ -176,6 +154,18 @@ const DashboardPage = () => {
     // Re-fetch orders whenever the user object changes (e.g., after login/logout)
     fetchOrders()
   }, [user]) // Dependency array now correctly includes `user`
+
+  useEffect(() => {
+    setProductsTabActive(activeTab === "products")
+  }, [activeTab])
+
+  // NEW LOGGING FOR DEBUGGING
+  useEffect(() => {
+    if (productsTabActive) {
+      console.log("DashboardPage: Orders state when 'My Products' tab is active:", orders)
+      console.log("DashboardPage: Calculated purchasedProductsCount:", purchasedProductsCount)
+    }
+  }, [productsTabActive, orders, purchasedProductsCount])
 
   if (!user) {
     return (
@@ -197,9 +187,6 @@ const DashboardPage = () => {
   const userReviews = getUserReviews(user._id)
 
   // Calculate purchased products count - using helper function
-  const purchasedProductsCount = orders
-    .filter((order) => canShowPurchasedProducts(order.status))
-    .reduce((total, order) => total + order.items.length, 0)
 
   const handleCancelOrder = async (orderId: string) => {
     if (confirm("Are you sure you want to cancel this order?")) {
@@ -541,7 +528,7 @@ const DashboardPage = () => {
                 <h1 className="text-2xl font-serif text-charcoal mb-2">My Products</h1>
                 <p className="text-charcoal/70">Access your purchased singing bowls and their resources</p>
               </div>
-              <PurchasedProducts orders={[]} />
+              <PurchasedProducts orders={orders} />
             </AnimatedSection>
           )}
 
@@ -851,7 +838,7 @@ const DashboardPage = () => {
                       <h3 className="text-xl font-semibold text-charcoal">
                         {user.firstName} {user.lastName}
                       </h3>
-                      <p className="text-charcoal/60">{user.email}</p>
+                      <p className="text-sm text-charcoal/60">{user.email}</p>
                     </div>
                   </div>
                   {!isEditingProfile ? (

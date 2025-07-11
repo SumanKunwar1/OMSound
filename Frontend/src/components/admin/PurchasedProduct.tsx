@@ -4,41 +4,7 @@ import { useState } from "react"
 import { Package, Star, Download, Play, Pause } from "lucide-react"
 import { useAuth } from "../../context/AuthContext"
 import { canShowPurchasedProducts } from "../../utils/order-helper"
-
-// Define the Order interface to match what DashboardPage passes
-interface Order {
-  id: string
-  userId: string
-  items: Array<{
-    productId: string
-    productName: string
-    productImage: string
-    quantity: number
-    price: number
-    size?: string
-    tone?: string
-  }>
-  shippingAddress: {
-    firstName: string
-    lastName: string
-    email: string
-    phone: string
-    street: string
-    city: string
-    state: string
-    zipCode: string
-    country: string
-  }
-  paymentMethod: "cod" | "paypal"
-  subtotal: number
-  deliveryCharge: number
-  tax: number
-  totalAmount: number
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
-  orderDate: string
-  estimatedDelivery: string
-  trackingNumber?: string
-}
+import type { Order } from "../../types/order" // Import Order from the new central file
 
 interface PurchasedProductItem {
   productId: string
@@ -51,7 +17,7 @@ interface PurchasedProductItem {
 }
 
 interface PurchasedProductsProps {
-  orders: Order[] // Now accepts orders as a prop
+  orders: Order[] // Now uses the imported Order type
 }
 
 export function PurchasedProducts({ orders }: PurchasedProductsProps) {
