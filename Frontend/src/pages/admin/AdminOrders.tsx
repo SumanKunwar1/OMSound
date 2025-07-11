@@ -1,231 +1,264 @@
-import { useState } from 'react';
-import { Edit, Truck, Package, CheckCircle, XCircle } from 'lucide-react';
-import DataTable from '../../components/admin/DataTable';
-import { useAdminAuth } from '../../context/AdminAuthContext';
+"use client"
+
+import { useState, useEffect } from "react"
+import { Edit, Truck, Package, CheckCircle, XCircle, AlertCircle } from "lucide-react"
+import axios from "axios"
 
 interface Order {
-  id: string;
-  customerName: string;
-  customerEmail: string;
+  id: string
+  userId: string
   items: Array<{
-    productName: string;
-    quantity: number;
-    price: number;
-  }>;
-  totalAmount: number;
-  status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
-  orderDate: string;
-  shippingAddress: string;
-  trackingNumber?: string;
+    productId: string
+    productName: string
+    productImage: string
+    quantity: number
+    price: number
+  }>
+  shippingAddress: {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    street: string
+    city: string
+    state: string
+    zipCode: string
+    country: string
+  }
+  paymentMethod: "cod" | "paypal"
+  subtotal: number
+  deliveryCharge: number
+  tax: number
+  totalAmount: number
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
+  orderDate: string
+  estimatedDelivery: string
 }
 
-const mockOrders: Order[] = [
-  {
-    id: 'ORD-001',
-    customerName: 'John Doe',
-    customerEmail: 'john@example.com',
-    items: [
-      { productName: 'Himalayan Harmony Bowl', quantity: 1, price: 195 }
-    ],
-    totalAmount: 195,
-    status: 'Delivered',
-    orderDate: '2024-01-15',
-    shippingAddress: '123 Main St, New York, NY 10001',
-    trackingNumber: 'TRK123456789'
-  },
-  {
-    id: 'ORD-002',
-    customerName: 'Jane Smith',
-    customerEmail: 'jane@example.com',
-    items: [
-      { productName: 'Ancient Resonance Bowl', quantity: 1, price: 285 }
-    ],
-    totalAmount: 285,
-    status: 'Shipped',
-    orderDate: '2024-01-18',
-    shippingAddress: '456 Oak Ave, Los Angeles, CA 90210',
-    trackingNumber: 'TRK987654321'
-  },
-  {
-    id: 'ORD-003',
-    customerName: 'Mike Johnson',
-    customerEmail: 'mike@example.com',
-    items: [
-      { productName: 'Tranquility Mini Bowl', quantity: 2, price: 125 }
-    ],
-    totalAmount: 250,
-    status: 'Processing',
-    orderDate: '2024-01-20',
-    shippingAddress: '789 Pine St, Chicago, IL 60601'
-  },
-  {
-    id: 'ORD-004',
-    customerName: 'Sarah Wilson',
-    customerEmail: 'sarah@example.com',
-    items: [
-      { productName: 'Serenity Bowl Set', quantity: 1, price: 350 }
-    ],
-    totalAmount: 350,
-    status: 'Pending',
-    orderDate: '2024-01-22',
-    shippingAddress: '321 Elm St, Miami, FL 33101'
-  },
-  {
-    id: 'ORD-005',
-    customerName: 'David Brown',
-    customerEmail: 'david@example.com',
-    items: [
-      { productName: 'Harmony Bowl', quantity: 1, price: 225 }
-    ],
-    totalAmount: 225,
-    status: 'Cancelled',
-    orderDate: '2024-01-19',
-    shippingAddress: '654 Maple Ave, Seattle, WA 98101'
-  }
-];
-
 const statusTabs = [
-  { key: 'Pending', label: 'Pending', icon: Package },
-  { key: 'Processing', label: 'Processing', icon: Edit },
-  { key: 'Shipped', label: 'Shipped', icon: Truck },
-  { key: 'Delivered', label: 'Delivered', icon: CheckCircle },
-  { key: 'Cancelled', label: 'Cancelled', icon: XCircle }
-];
+  { key: "pending", label: "Pending", icon: Package, color: "yellow" },
+  { key: "processing", label: "Processing", icon: Edit, color: "blue" },
+  { key: "shipped", label: "Shipped", icon: Truck, color: "purple" },
+  { key: "delivered", label: "Delivered", icon: CheckCircle, color: "green" },
+  { key: "cancelled", label: "Cancelled", icon: XCircle, color: "red" },
+]
+
+// Define the allowed status progression
+const statusProgression: Record<string, string[]> = {
+  pending: ["processing", "cancelled"],
+  processing: ["shipped", "cancelled"],
+  shipped: ["delivered"],
+  delivered: [], // Final state
+  cancelled: [], // Final state
+}
 
 const AdminOrders = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('Pending');
-  const { hasPermission } = useAdminAuth();
+  const [orders, setOrders] = useState<Order[]>([]) // Initialize as empty array
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [showModal, setShowModal] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [activeTab, setActiveTab] = useState<string>("pending")
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [updateSuccess, setUpdateSuccess] = useState<string | null>(null)
+  const [pendingStatusChange, setPendingStatusChange] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        // Use the correct API endpoint
+        const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/orders/admin`
+        console.log("Fetching orders from:", apiUrl)
+
+        const response = await axios.get<Order[]>(apiUrl)
+        console.log("Orders response:", response.data)
+
+        // Ensure we always have an array
+        const ordersData = Array.isArray(response.data) ? response.data : []
+        setOrders(ordersData)
+      } catch (err: any) {
+        console.error("Error fetching orders:", err)
+        setError(err.response?.data?.message || "Failed to fetch orders")
+        setOrders([]) // Ensure orders is always an array
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchOrders()
+  }, [])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Processing':
-        return 'bg-blue-100 text-blue-800';
-      case 'Shipped':
-        return 'bg-purple-100 text-purple-800';
-      case 'Delivered':
-        return 'bg-green-100 text-green-800';
-      case 'Cancelled':
-        return 'bg-red-100 text-red-800';
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+      case "processing":
+        return "bg-blue-100 text-blue-800 border-blue-200"
+      case "shipped":
+        return "bg-purple-100 text-purple-800 border-purple-200"
+      case "delivered":
+        return "bg-green-100 text-green-800 border-green-200"
+      case "cancelled":
+        return "bg-red-100 text-red-800 border-red-200"
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800 border-gray-200"
     }
-  };
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'Pending':
-        return <Package size={16} />;
-      case 'Processing':
-        return <Edit size={16} />;
-      case 'Shipped':
-        return <Truck size={16} />;
-      case 'Delivered':
-        return <CheckCircle size={16} />;
-      case 'Cancelled':
-        return <XCircle size={16} />;
+      case "pending":
+        return <Package size={16} />
+      case "processing":
+        return <Edit size={16} />
+      case "shipped":
+        return <Truck size={16} />
+      case "delivered":
+        return <CheckCircle size={16} />
+      case "cancelled":
+        return <XCircle size={16} />
       default:
-        return <Package size={16} />;
+        return <Package size={16} />
     }
-  };
+  }
 
-  const getTabColor = (status: string) => {
+  const getTabColor = (status: string, isActive: boolean) => {
+    if (!isActive) return "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+
     switch (status) {
-      case 'Pending':
-        return 'border-yellow-500 text-yellow-600';
-      case 'Processing':
-        return 'border-blue-500 text-blue-600';
-      case 'Shipped':
-        return 'border-purple-500 text-purple-600';
-      case 'Delivered':
-        return 'border-green-500 text-green-600';
-      case 'Cancelled':
-        return 'border-red-500 text-red-600';
+      case "pending":
+        return "border-yellow-500 text-yellow-600"
+      case "processing":
+        return "border-blue-500 text-blue-600"
+      case "shipped":
+        return "border-purple-500 text-purple-600"
+      case "delivered":
+        return "border-green-500 text-green-600"
+      case "cancelled":
+        return "border-red-500 text-red-600"
       default:
-        return 'border-gray-500 text-gray-600';
+        return "border-gray-500 text-gray-600"
     }
-  };
-
-  const columns = [
-    { key: 'id', label: 'Order ID', sortable: true },
-    { key: 'customerName', label: 'Customer', sortable: true },
-    { 
-      key: 'totalAmount', 
-      label: 'Total',
-      sortable: true,
-      render: (amount: number) => `$${amount.toFixed(2)}`
-    },
-    { 
-      key: 'orderDate', 
-      label: 'Order Date',
-      sortable: true,
-      render: (date: string) => new Date(date).toLocaleDateString()
-    },
-    {
-      key: 'trackingNumber',
-      label: 'Tracking',
-      render: (tracking: string) => tracking || '-'
-    }
-  ];
+  }
 
   const handleView = (order: Order) => {
-    setSelectedOrder(order);
-    setShowModal(true);
-  };
+    setSelectedOrder(order)
+    setShowModal(true)
+  }
 
-  const handleStatusUpdate = (orderId: string, newStatus: string) => {
-    console.log('Updating order status:', orderId, newStatus);
-    alert(`Order ${orderId} status updated to ${newStatus}`);
-  };
+  const confirmStatusUpdate = async (orderId: string, newStatus: string) => {
+    setIsUpdating(true)
+    setUpdateSuccess(null)
+    try {
+      const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/orders/${orderId}/status`
+      const response = await axios.put<Order>(apiUrl, { status: newStatus })
 
-  // Filter orders based on active tab
-  const filteredOrders = mockOrders.filter(order => order.status === activeTab);
+      setOrders((prev) => prev.map((order) => (order.id === orderId ? { ...order, status: newStatus as any } : order)))
+
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, status: newStatus as any })
+      }
+      setPendingStatusChange(null)
+      setUpdateSuccess(`Order ${orderId} status successfully updated to ${newStatus.toUpperCase()}`)
+      setTimeout(() => setUpdateSuccess(null), 5000)
+    } catch (error: any) {
+      console.error("Error updating order status:", error)
+      alert(error.response?.data?.message || "Failed to update order status. Please try again.")
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  // Filter orders based on active tab - ensure orders is always an array
+  const filteredOrders = Array.isArray(orders) ? orders.filter((order) => order.status === activeTab) : []
 
   // Get count for each status
   const getStatusCount = (status: string) => {
-    return mockOrders.filter(order => order.status === status).length;
-  };
+    return Array.isArray(orders) ? orders.filter((order) => order.status === status).length : 0
+  }
+
+  // Get allowed next statuses for current order
+  const getAllowedStatuses = (currentStatus: string): string[] => {
+    return statusProgression[currentStatus] || []
+  }
+
+  // Format customer name from shipping address
+  const getCustomerName = (order: Order) => {
+    return `${order.shippingAddress.firstName} ${order.shippingAddress.lastName}`
+  }
+
+  // Clear success message when modal closes
+  useEffect(() => {
+    if (!showModal) {
+      setUpdateSuccess(null)
+      setPendingStatusChange(null)
+    }
+  }, [showModal])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Orders</h3>
+          <p className="text-gray-500">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-          <p className="text-gray-600">Manage customer orders and fulfillment</p>
+          <h1 className="text-2xl font-bold text-gray-900">Orders Management</h1>
+          <p className="text-gray-600">Manage customer orders and update fulfillment status</p>
         </div>
+        <div className="text-sm text-gray-500">Total Orders: {orders.length}</div>
       </div>
 
       {/* Status Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {statusTabs.map((tab) => {
-            const count = getStatusCount(tab.key);
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.key;
-            
+            const count = getStatusCount(tab.key)
+            const Icon = tab.icon
+            const isActive = activeTab === tab.key
+
             return (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                  isActive
-                    ? `${getTabColor(tab.key)} border-b-2`
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${getTabColor(tab.key, isActive)}`}
               >
                 <Icon size={16} className="mr-2" />
                 {tab.label}
-                <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
-                  isActive ? getStatusColor(tab.key) : 'bg-gray-100 text-gray-600'
-                }`}>
+                <span
+                  className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                    isActive ? getStatusColor(tab.key) : "bg-gray-100 text-gray-600"
+                  }`}
+                >
                   {count}
                 </span>
               </button>
-            );
+            )
           })}
         </nav>
       </div>
@@ -237,37 +270,66 @@ const AdminOrders = () => {
             <div className="flex items-center">
               {getStatusIcon(activeTab)}
               <h2 className="ml-2 text-lg font-semibold text-gray-900">
-                {activeTab} Orders ({filteredOrders.length})
+                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Orders ({filteredOrders.length})
               </h2>
             </div>
-            <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(activeTab)}`}>
-              {filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'}
+            <div className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(activeTab)}`}>
+              {filteredOrders.length} {filteredOrders.length === 1 ? "order" : "orders"}
             </div>
           </div>
         </div>
 
-        {/* Orders Table */}
+        {/* Orders List */}
         <div className="p-6">
           {filteredOrders.length > 0 ? (
-            <DataTable
-              data={filteredOrders}
-              columns={columns}
-              onView={handleView}
-              onEdit={hasPermission('orders.write') ? (order) => handleStatusUpdate(order.id, 'Processing') : undefined}
-              searchable
-              filterable
-            />
+            <div className="space-y-4">
+              {filteredOrders.map((order) => (
+                <div
+                  key={order.id}
+                  className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">Order #{order.id}</h3>
+                          <p className="text-sm text-gray-600">{getCustomerName(order)}</p>
+                          <p className="text-sm text-gray-500">{order.shippingAddress.email}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-gray-900">${order.totalAmount.toFixed(2)}</p>
+                          <p className="text-sm text-gray-500">{new Date(order.orderDate).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-center gap-4">
+                        <span
+                          className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(order.status)}`}
+                        >
+                          {getStatusIcon(order.status)}
+                          <span className="ml-1">{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {order.items.length} {order.items.length === 1 ? "item" : "items"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleView(order)}
+                        className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="text-center py-12">
-              <div className="flex justify-center mb-4">
-                {getStatusIcon(activeTab)}
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No {activeTab.toLowerCase()} orders
-              </h3>
-              <p className="text-gray-500">
-                There are currently no orders with {activeTab.toLowerCase()} status.
-              </p>
+              <div className="flex justify-center mb-4 text-gray-400">{getStatusIcon(activeTab)}</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No {activeTab} orders</h3>
+              <p className="text-gray-500">There are currently no orders with {activeTab} status.</p>
             </div>
           )}
         </div>
@@ -279,52 +341,139 @@ const AdminOrders = () => {
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Order Details - {selectedOrder.id}
-                </h2>
+                <h2 className="text-xl font-semibold text-gray-900">Order Details - {selectedOrder.id}</h2>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <XCircle size={24} />
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6 space-y-6">
+              {/* Success Message */}
+              {updateSuccess && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <CheckCircle className="text-green-600 mr-2" size={20} />
+                    <p className="text-green-800 font-medium">{updateSuccess}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Order Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Customer Information</h3>
                   <div className="space-y-2">
-                    <p><span className="font-medium">Name:</span> {selectedOrder.customerName}</p>
-                    <p><span className="font-medium">Email:</span> {selectedOrder.customerEmail}</p>
-                    <p><span className="font-medium">Order Date:</span> {new Date(selectedOrder.orderDate).toLocaleDateString()}</p>
+                    <p>
+                      <span className="font-medium">Name:</span> {getCustomerName(selectedOrder)}
+                    </p>
+                    <p>
+                      <span className="font-medium">Email:</span> {selectedOrder.shippingAddress.email}
+                    </p>
+                    <p>
+                      <span className="font-medium">Phone:</span> {selectedOrder.shippingAddress.phone}
+                    </p>
+                    <p>
+                      <span className="font-medium">Order Date:</span>{" "}
+                      {new Date(selectedOrder.orderDate).toLocaleDateString()}
+                    </p>
+                    <p>
+                      <span className="font-medium">Payment:</span> {selectedOrder.paymentMethod.toUpperCase()}
+                    </p>
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Order Status</h3>
                   <div className="space-y-4">
                     <div className="flex items-center">
-                      <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(selectedOrder.status)}`}>
+                      <span
+                        className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full border ${getStatusColor(selectedOrder.status)}`}
+                      >
                         {getStatusIcon(selectedOrder.status)}
-                        <span className="ml-2">{selectedOrder.status}</span>
+                        <span className="ml-2">
+                          {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
+                        </span>
                       </span>
                     </div>
-                    {hasPermission('orders.write') && (
-                      <select
-                        value={selectedOrder.status}
-                        onChange={(e) => handleStatusUpdate(selectedOrder.id, e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
-                      >
-                        <option value="Pending">Pending</option>
-                        <option value="Processing">Processing</option>
-                        <option value="Shipped">Shipped</option>
-                        <option value="Delivered">Delivered</option>
-                        <option value="Cancelled">Cancelled</option>
-                      </select>
-                    )}
+
+                    {/* Status Update Controls */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Update Status (Forward Only)
+                      </label>
+                      <div className="space-y-3">
+                        <div className="flex gap-2">
+                          <select
+                            value={pendingStatusChange || selectedOrder.status}
+                            onChange={(e) => setPendingStatusChange(e.target.value)}
+                            disabled={isUpdating || getAllowedStatuses(selectedOrder.status).length === 0}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                          >
+                            <option value={selectedOrder.status}>
+                              {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)} (Current)
+                            </option>
+                            {getAllowedStatuses(selectedOrder.status).map((status) => (
+                              <option key={status} value={status}>
+                                {status.charAt(0).toUpperCase() + status.slice(1)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Show confirmation buttons when a new status is selected */}
+                        {pendingStatusChange && pendingStatusChange !== selectedOrder.status && (
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-blue-800">
+                                  Change status from "{selectedOrder.status}" to "{pendingStatusChange}"?
+                                </p>
+                                <p className="text-xs text-blue-600 mt-1">
+                                  This action cannot be undone and will notify the customer.
+                                </p>
+                              </div>
+                              <div className="flex gap-2 ml-4">
+                                <button
+                                  onClick={() => confirmStatusUpdate(selectedOrder.id, pendingStatusChange)}
+                                  disabled={isUpdating}
+                                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                >
+                                  {isUpdating ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                      Updating...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <CheckCircle size={14} />
+                                      Confirm
+                                    </>
+                                  )}
+                                </button>
+                                <button
+                                  onClick={() => setPendingStatusChange(null)}
+                                  disabled={isUpdating}
+                                  className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300 disabled:opacity-50"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {getAllowedStatuses(selectedOrder.status).length === 0 && (
+                          <p className="text-sm text-gray-500 flex items-center">
+                            <AlertCircle size={14} className="mr-1" />
+                            This order has reached its final status
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -345,17 +494,51 @@ const AdminOrders = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {selectedOrder.items.map((item, index) => (
                         <tr key={index}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.productName}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center">
+                              <img
+                                src={item.productImage || "/placeholder.svg?height=40&width=40"}
+                                alt={item.productName}
+                                className="w-10 h-10 rounded-lg object-cover mr-3"
+                              />
+                              <span className="text-sm text-gray-900">{item.productName}</span>
+                            </div>
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.quantity}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.price}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${(item.quantity * item.price).toFixed(2)}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${item.price.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${(item.quantity * item.price).toFixed(2)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                <div className="mt-4 text-right">
-                  <p className="text-lg font-semibold">Total: ${selectedOrder.totalAmount.toFixed(2)}</p>
+
+                {/* Order Summary */}
+                <div className="mt-4 bg-gray-50 p-4 rounded-lg">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Subtotal:</span>
+                      <span>${selectedOrder.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Delivery:</span>
+                      <span>${selectedOrder.deliveryCharge.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Tax:</span>
+                      <span>${selectedOrder.tax.toFixed(2)}</span>
+                    </div>
+                    <div className="border-t border-gray-200 pt-2">
+                      <div className="flex justify-between font-semibold">
+                        <span>Total:</span>
+                        <span>${selectedOrder.totalAmount.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -363,12 +546,25 @@ const AdminOrders = () => {
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Shipping Information</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-900">{selectedOrder.shippingAddress}</p>
-                  {selectedOrder.trackingNumber && (
-                    <p className="text-sm text-gray-600 mt-2">
-                      <span className="font-medium">Tracking Number:</span> {selectedOrder.trackingNumber}
-                    </p>
-                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Shipping Address:</p>
+                      <p className="text-sm text-gray-900 mt-1">
+                        {selectedOrder.shippingAddress.street}
+                        <br />
+                        {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state}{" "}
+                        {selectedOrder.shippingAddress.zipCode}
+                        <br />
+                        {selectedOrder.shippingAddress.country}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Estimated Delivery:</p>
+                      <p className="text-sm text-gray-900 mt-1">
+                        {new Date(selectedOrder.estimatedDelivery).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -376,7 +572,7 @@ const AdminOrders = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default AdminOrders;
+export default AdminOrders

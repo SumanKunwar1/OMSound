@@ -1,19 +1,18 @@
-// CheckoutPage.tsx
 "use client"
 
+import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { CreditCard, Truck, MapPin, Check } from "lucide-react"
+import { CreditCard, Truck, MapPin, Check, AlertCircle, CheckCircle } from "lucide-react"
 import SEOHelmet from "../components/seo/SEOHelmet"
 import { useAuth } from "../context/AuthContext"
 import { useCart } from "../context/CartContext"
-import { useOrder } from "../context/OrderContext"
+import { useOrder } from "../context/OrderContext" // Keep this import
 import AnimatedSection from "../components/utils/AnimatedSection"
 
 const CheckoutPage = () => {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const { cart, totalPrice, clearCart } = useCart()
-  const { createOrder } = useOrder()
+  const { createOrder } = useOrder() // Use createOrder from OrderContext
   const navigate = useNavigate()
 
   const [shippingAddress, setShippingAddress] = useState({
@@ -30,6 +29,8 @@ const CheckoutPage = () => {
 
   const [selectedPayment, setSelectedPayment] = useState<"cod" | "paypal">("cod")
   const [isProcessing, setIsProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [orderSuccess, setOrderSuccess] = useState(false)
 
   // Calculate totals
   const subtotal = totalPrice
@@ -37,17 +38,63 @@ const CheckoutPage = () => {
   const tax = subtotal * 0.13
   const total = subtotal + deliveryCharge + tax
 
+  // Validation function
+  const validateForm = (): boolean => {
+    const requiredFields = ["firstName", "lastName", "email", "phone", "street", "city", "state", "zipCode", "country"]
+
+    for (const field of requiredFields) {
+      if (!shippingAddress[field as keyof typeof shippingAddress]?.trim()) {
+        setError(`Please fill in the ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`)
+        return false
+      }
+    }
+
+    if (cart.length === 0) {
+      setError("Your cart is empty")
+      return false
+    }
+
+    if (!user) {
+      // Check for user object directly
+      setError("Please log in to place an order")
+      return false
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(shippingAddress.email)) {
+      setError("Please enter a valid email address")
+      return false
+    }
+
+    // Phone validation (basic)
+    if (shippingAddress.phone.length < 10) {
+      setError("Please enter a valid phone number")
+      return false
+    }
+
+    return true
+  }
+
   const handlePlaceOrder = async () => {
+    if (!validateForm()) {
+      return
+    }
+
     setIsProcessing(true)
+    setError(null)
 
     try {
       const orderData = {
+        // userId is now handled within OrderContext's createOrder function
         items: cart.map((item) => ({
           productId: item.product.id,
           productName: item.product.name,
-          productImage: item.product.image,
+          productImage: item.product.image || "",
           quantity: item.quantity,
           price: item.product.price,
+          size: item.product.size,
+          tone: item.product.tone,
         })),
         shippingAddress,
         paymentMethod: selectedPayment,
@@ -57,14 +104,78 @@ const CheckoutPage = () => {
         totalAmount: total,
       }
 
-      const orderId = await createOrder(orderData)
+      console.log("🛒 Placing order with data:", orderData)
+      // The userId is now added by the OrderContext's createOrder function
+      // console.log("🔍 User ID being sent:", user._id); // This log is now redundant here
+      // console.log("🔍 User ID type:", typeof user._id); // This log is now redundant here
+
+      await createOrder(orderData) // Call createOrder from useOrder context
+
+      setOrderSuccess(true)
       clearCart()
-      navigate(`/order-confirmation/${orderId}`)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Order placement failed:", error)
+
+      if (error.message.includes("Authentication")) {
+        setError("Your session has expired. Please log in again.")
+        setTimeout(() => navigate("/login"), 2000)
+      } else if (
+        error.message.includes("network") ||
+        error.message.includes("fetch") ||
+        error.message.includes("timed out")
+      ) {
+        setError("Network error or request timed out. Please check your connection and try again.")
+      } else if (error.message.includes("validation")) {
+        setError("Please check your order details and try again.")
+      } else {
+        setError(error.message || "Failed to place order. Please try again.")
+      }
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  // Redirect if not authenticated
+  if (!user) {
+    navigate("/login")
+    return null
+  }
+
+  // Show success state directly on this page
+  if (orderSuccess) {
+    return (
+      <div className="min-h-screen pt-24 bg-gray-50 flex items-center justify-center">
+        <SEOHelmet
+          title="Order Confirmed! | OMSound Nepal"
+          description="Your order has been successfully placed."
+          noindex={true}
+          keywords=""
+        />
+        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg border border-green-200">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle size={40} className="text-green-600" />
+          </div>
+          <h2 className="text-3xl font-serif text-charcoal mb-3">Order Confirmed!</h2>
+          <p className="text-charcoal/70 text-lg mb-6">
+            Thank you so much for your order. We appreciate your business!
+          </p>
+          <div className="space-y-3">
+            <Link
+              to="/dashboard"
+              className="block w-full bg-gold text-white py-3 px-6 rounded-lg hover:bg-gold/90 transition-colors"
+            >
+              Go to Dashboard
+            </Link>
+            <Link
+              to="/shop"
+              className="block w-full bg-gray-100 text-charcoal py-3 px-6 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Continue Shopping
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -82,6 +193,25 @@ const CheckoutPage = () => {
           <h1 className="text-3xl font-serif text-charcoal">Checkout</h1>
           <p className="text-charcoal/70 mt-2">Complete your order details</p>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center">
+              <AlertCircle size={20} className="text-red-600 mr-2" />
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Debug Info in Development */}
+        {import.meta.env.DEV && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-700 text-sm">
+              <strong>Debug Info:</strong> User: {user?.email}, Token: {token ? "✅ Present" : "❌ Missing"}
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Forms */}
@@ -103,9 +233,10 @@ const CheckoutPage = () => {
                       <input
                         type="text"
                         value={shippingAddress.firstName}
-                        onChange={(e) => setShippingAddress({...shippingAddress, firstName: e.target.value})}
+                        onChange={(e) => setShippingAddress({ ...shippingAddress, firstName: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                         placeholder="Enter first name"
+                        required
                       />
                     </div>
                     <div>
@@ -113,9 +244,10 @@ const CheckoutPage = () => {
                       <input
                         type="text"
                         value={shippingAddress.lastName}
-                        onChange={(e) => setShippingAddress({...shippingAddress, lastName: e.target.value})}
+                        onChange={(e) => setShippingAddress({ ...shippingAddress, lastName: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                         placeholder="Enter last name"
+                        required
                       />
                     </div>
                   </div>
@@ -126,9 +258,10 @@ const CheckoutPage = () => {
                       <input
                         type="email"
                         value={shippingAddress.email}
-                        onChange={(e) => setShippingAddress({...shippingAddress, email: e.target.value})}
+                        onChange={(e) => setShippingAddress({ ...shippingAddress, email: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                         placeholder="Enter email address"
+                        required
                       />
                     </div>
                     <div>
@@ -136,9 +269,10 @@ const CheckoutPage = () => {
                       <input
                         type="tel"
                         value={shippingAddress.phone}
-                        onChange={(e) => setShippingAddress({...shippingAddress, phone: e.target.value})}
+                        onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                         placeholder="Enter phone number"
+                        required
                       />
                     </div>
                   </div>
@@ -148,9 +282,10 @@ const CheckoutPage = () => {
                     <input
                       type="text"
                       value={shippingAddress.street}
-                      onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})}
+                      onChange={(e) => setShippingAddress({ ...shippingAddress, street: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                       placeholder="Enter street address"
+                      required
                     />
                   </div>
 
@@ -160,9 +295,10 @@ const CheckoutPage = () => {
                       <input
                         type="text"
                         value={shippingAddress.city}
-                        onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})}
+                        onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                         placeholder="Enter city"
+                        required
                       />
                     </div>
                     <div>
@@ -170,9 +306,10 @@ const CheckoutPage = () => {
                       <input
                         type="text"
                         value={shippingAddress.state}
-                        onChange={(e) => setShippingAddress({...shippingAddress, state: e.target.value})}
+                        onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                         placeholder="Enter state"
+                        required
                       />
                     </div>
                     <div>
@@ -180,9 +317,10 @@ const CheckoutPage = () => {
                       <input
                         type="text"
                         value={shippingAddress.zipCode}
-                        onChange={(e) => setShippingAddress({...shippingAddress, zipCode: e.target.value})}
+                        onChange={(e) => setShippingAddress({ ...shippingAddress, zipCode: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                         placeholder="Enter ZIP code"
+                        required
                       />
                     </div>
                   </div>
@@ -191,8 +329,9 @@ const CheckoutPage = () => {
                     <label className="block text-sm font-medium text-charcoal mb-2">Country *</label>
                     <select
                       value={shippingAddress.country}
-                      onChange={(e) => setShippingAddress({...shippingAddress, country: e.target.value})}
+                      onChange={(e) => setShippingAddress({ ...shippingAddress, country: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
+                      required
                     >
                       <option value="Nepal">Nepal</option>
                       <option value="India">India</option>
@@ -222,9 +361,7 @@ const CheckoutPage = () => {
                 <div className="space-y-4">
                   <div
                     className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                      selectedPayment === "cod"
-                        ? "border-gold bg-gold/5"
-                        : "border-gray-200 hover:border-gray-300"
+                      selectedPayment === "cod" ? "border-gold bg-gold/5" : "border-gray-200 hover:border-gray-300"
                     }`}
                     onClick={() => setSelectedPayment("cod")}
                   >
@@ -245,9 +382,7 @@ const CheckoutPage = () => {
                   </div>
                   <div
                     className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                      selectedPayment === "paypal"
-                        ? "border-gold bg-gold/5"
-                        : "border-gray-200 hover:border-gray-300"
+                      selectedPayment === "paypal" ? "border-gold bg-gold/5" : "border-gray-200 hover:border-gray-300"
                     }`}
                     onClick={() => setSelectedPayment("paypal")}
                   >

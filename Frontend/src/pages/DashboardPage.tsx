@@ -1,49 +1,181 @@
-import { useState } from 'react';
-import SEOHelmet from '../components/seo/SEOHelmet';
-import { seoData } from '../data/seoData';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
-import { getOrdersForUser, canCancelOrder, canReviewOrder, getStatusColor } from '../data/orders';
-import { getUserReviews, getUserReviewForProduct, addUserReview, updateUserReview, deleteUserReview } from '../data/userReviews';
-import { 
-  User, Package, ShoppingCart, Star, Edit, Trash2, X, Calendar, MapPin, Phone, Mail, Save, 
-  Ambulance as Cancel, LogOut, Truck, Eye, ChevronRight, Home, Settings 
-} from 'lucide-react';
-import AnimatedSection from '../components/utils/AnimatedSection';
+"use client"
+
+import { useState, useEffect } from "react"
+import SEOHelmet from "../components/seo/SEOHelmet"
+import { seoData } from "../data/seoData"
+import { useAuth } from "../context/AuthContext"
+import { useCart } from "../context/CartContext"
+import { orderService } from "../services/orderServices" // Keep this for cancelOrder
+import {
+  getUserReviews,
+  getUserReviewForProduct,
+  addUserReview,
+  updateUserReview,
+  deleteUserReview,
+} from "../data/userReviews"
+import { PurchasedProducts } from "../components/admin/PurchasedProduct"
+import {
+  User,
+  Package,
+  ShoppingCart,
+  Star,
+  Edit,
+  Trash2,
+  X,
+  Calendar,
+  MapPin,
+  Phone,
+  Mail,
+  Save,
+  DeleteIcon as Cancel,
+  LogOut,
+  Truck,
+  Eye,
+  ChevronRight,
+  Home,
+  Settings,
+  Gift,
+} from "lucide-react"
+import AnimatedSection from "../components/utils/AnimatedSection"
+import { canShowPurchasedProducts } from "../utils/order-helper"
+import axios from "axios"
+import { API_URL } from "../config" // Assuming you have a config file for API_URL
+import { Link } from "react-router-dom"
 
 // Define proper interfaces for form data
 interface ProfileFormData {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
+  firstName?: string
+  lastName?: string
+  email?: string
+  phone?: string
   address?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    country?: string;
-  };
-  joinedDate?: string;
+    street?: string
+    city?: string
+    state?: string
+    zipCode?: string
+    country?: string
+  }
+  joinedDate?: string
+}
+
+interface Order {
+  id: string // Changed from _id to id to match backend response
+  userId: string
+  items: Array<{
+    productId: string
+    productName: string
+    productImage: string
+    quantity: number
+    price: number
+  }>
+  shippingAddress: {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    street: string
+    city: string
+    state: string
+    zipCode: string
+    country: string
+  }
+  paymentMethod: "cod" | "paypal"
+  subtotal: number
+  deliveryCharge: number
+  tax: number
+  totalAmount: number
+  status: string
+  orderDate: string
+  estimatedDelivery: string
+  trackingNumber?: string
 }
 
 const DashboardPage = () => {
-  const { user, updateProfile, logout } = useAuth();
-  const { cart, removeFromCart, updateQuantity } = useCart();
-  const [activeTab, setActiveTab] = useState<'overview' | 'cart' | 'orders' | 'reviews' | 'profile' | 'settings'>('overview');
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileFormData>(user || {});
-  const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
+  const { user, updateProfile, logout } = useAuth()
+  const { cart, removeFromCart, updateQuantity } = useCart()
+  // Removed `useOrder` import as it's no longer used for fetching orders here.
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "products" | "cart" | "orders" | "reviews" | "profile" | "settings"
+  >("overview")
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [profileData, setProfileData] = useState<ProfileFormData>(user || {})
+  const [selectedOrder, setSelectedOrder] = useState<string | null>(null)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [ordersLoading, setOrdersLoading] = useState(true)
+  const [ordersError, setOrdersError] = useState<string | null>(null)
   const [reviewModal, setReviewModal] = useState<{
-    isOpen: boolean;
-    productId?: string;
-    orderId?: string;
-    productName?: string;
-    productImage?: string;
-    existingReview?: any;
-  }>({ isOpen: false });
-  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
-  const seo = seoData.dashboard;
+    isOpen: boolean
+    productId?: string
+    orderId?: string
+    productName?: string
+    productImage?: string
+    existingReview?: any
+  }>({ isOpen: false })
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" })
+  const seo = seoData.dashboard
+
+  // Fetch real orders from backend
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!user?._id) {
+        console.log("❌ No user ID found, skipping order fetch.")
+        setOrdersLoading(false)
+        return
+      }
+
+      try {
+        setOrdersLoading(true)
+        setOrdersError(null)
+
+        // Debug user information
+        console.log("🔍 Current user:", user)
+        console.log("🔍 User ID:", user._id)
+        console.log("🔍 User ID type:", typeof user._id)
+
+        // Fetch orders from backend API
+        // Ensure API_URL is correctly defined in your config.ts
+        const apiUrl = `${API_URL}/orders/myorders?userId=${user._id}`
+        console.log("📡 Fetching user orders from:", apiUrl)
+
+        const response = await axios.get<Order[]>(apiUrl)
+        console.log("✅ User orders response:", response.data)
+        console.log("✅ Number of orders found:", response.data?.length || 0)
+
+        // Transform the data to match frontend expectations
+        const transformedOrders = Array.isArray(response.data)
+          ? response.data.map((order: any) => ({
+              id: order.id || order._id, // Use 'id' if present, fallback to '_id'
+              userId: order.userId,
+              items: order.items,
+              shippingAddress: order.shippingAddress,
+              paymentMethod: order.paymentMethod,
+              subtotal: order.subtotal,
+              deliveryCharge: order.deliveryCharge,
+              tax: order.tax,
+              totalAmount: order.totalAmount,
+              status: order.status,
+              orderDate: order.orderDate || order.createdAt, // Use 'orderDate' if present, fallback to 'createdAt'
+              estimatedDelivery: order.estimatedDelivery,
+              trackingNumber: order.trackingNumber,
+            }))
+          : []
+
+        console.log("🔄 Transformed orders for display:", transformedOrders)
+        setOrders(transformedOrders)
+      } catch (error: any) {
+        console.error("❌ Error fetching user orders:", error)
+        console.error("❌ Error response data:", error.response?.data)
+        console.error("❌ Error status:", error.response?.status)
+        setOrdersError(error.response?.data?.message || "Failed to load orders")
+        setOrders([])
+      } finally {
+        setOrdersLoading(false)
+      }
+    }
+
+    // Re-fetch orders whenever the user object changes (e.g., after login/logout)
+    fetchOrders()
+  }, [user]) // Dependency array now correctly includes `user`
 
   if (!user) {
     return (
@@ -51,95 +183,112 @@ const DashboardPage = () => {
         <SEOHelmet
           title="Please Log In | OMSound Nepal"
           description="Please log in to access your dashboard"
-          noindex={true} keywords={''}        />
+          noindex={true}
+          keywords={""}
+        />
         <div className="text-center">
           <h2 className="text-2xl font-serif text-charcoal mb-4">Please log in to access your dashboard</h2>
         </div>
       </div>
-    );
+    )
   }
 
-  const orders = getOrdersForUser(user._id);
-  const userReviews = getUserReviews(user._id);
+  // Get user reviews
+  const userReviews = getUserReviews(user._id)
 
-  const handleCancelOrder = (orderId: string) => {
-    console.log('Canceling order:', orderId);
-    alert('Order canceled successfully');
-  };
+  // Calculate purchased products count - using helper function
+  const purchasedProductsCount = orders
+    .filter((order) => canShowPurchasedProducts(order.status))
+    .reduce((total, order) => total + order.items.length, 0)
+
+  const handleCancelOrder = async (orderId: string) => {
+    if (confirm("Are you sure you want to cancel this order?")) {
+      try {
+        await orderService.cancelOrder(orderId)
+        // Update local state to reflect cancellation
+        setOrders((prev) => prev.map((order) => (order.id === orderId ? { ...order, status: "cancelled" } : order)))
+      } catch (error) {
+        console.error("Failed to cancel order:", error)
+        alert("Failed to cancel order. Please try again.")
+      }
+    }
+  }
 
   const handleLogout = () => {
-    if (confirm('Are you sure you want to log out?')) {
-      logout();
+    if (confirm("Are you sure you want to log out?")) {
+      logout()
     }
-  };
+  }
 
   const handleProfileUpdate = async () => {
     const transformedData = {
       ...profileData,
-      address: profileData.address ? {
-        street: profileData.address.street || '',
-        city: profileData.address.city || '',
-        state: profileData.address.state || '',
-        zipCode: profileData.address.zipCode || '',
-        country: profileData.address.country || ''
-      } : undefined
-    };
-
-    const success = await updateProfile(transformedData);
-    if (success) {
-      setIsEditingProfile(false);
-      alert('Profile updated successfully');
+      address: profileData.address
+        ? {
+            street: profileData.address.street || "",
+            city: profileData.address.city || "",
+            state: profileData.address.state || "",
+            zipCode: profileData.address.zipCode || "",
+            country: profileData.address.country || "",
+          }
+        : undefined,
     }
-  };
+
+    const success = await updateProfile(transformedData)
+    if (success) {
+      setIsEditingProfile(false)
+      alert("Profile updated successfully")
+    }
+  }
 
   const openReviewModal = (productId: string, orderId: string, productName: string, productImage: string) => {
-    const existingReview = getUserReviewForProduct(user._id, productId, orderId);
+    const existingReview = getUserReviewForProduct(user._id, productId, orderId)
     setReviewModal({
       isOpen: true,
       productId,
       orderId,
       productName,
       productImage,
-      existingReview
-    });
-    
+      existingReview,
+    })
+
     if (existingReview) {
       setReviewForm({
         rating: existingReview.rating,
-        comment: existingReview.comment
-      });
+        comment: existingReview.comment,
+      })
     } else {
-      setReviewForm({ rating: 5, comment: '' });
+      setReviewForm({ rating: 5, comment: "" })
     }
-  };
+  }
 
   const handleReviewSubmit = () => {
-    if (!reviewModal.productId || !reviewModal.orderId) return;
+    if (!reviewModal.productId || !reviewModal.orderId) return
 
     if (reviewModal.existingReview) {
-      updateUserReview(reviewModal.existingReview.id, reviewForm);
+      updateUserReview(reviewModal.existingReview.id, reviewForm)
     } else {
       addUserReview({
         userId: user._id,
         productId: reviewModal.productId,
         orderId: reviewModal.orderId,
-        productName: reviewModal.productName || '',
-        productImage: reviewModal.productImage || '',
+        productName: reviewModal.productName || "",
+        productImage: reviewModal.productImage || "",
         rating: reviewForm.rating,
-        comment: reviewForm.comment
-      });
+        comment: reviewForm.comment,
+      })
     }
 
-    setReviewModal({ isOpen: false });
-    alert('Review saved successfully');
-  };
+    setReviewModal({ isOpen: false })
+    alert("Review saved successfully")
+  }
 
   const handleDeleteReview = (reviewId: string) => {
-    if (confirm('Are you sure you want to delete this review?')) {
-      deleteUserReview(reviewId);
-      alert('Review deleted successfully');
+    if (confirm("Are you sure you want to delete this review?")) {
+      deleteUserReview(reviewId)
+      alert("Review deleted successfully")
     }
-  };
+  }
 
   const renderStars = (rating: number, interactive = false, onRatingChange?: (rating: number) => void) => {
     return Array.from({ length: 5 }, (_, index) => (
@@ -147,41 +296,70 @@ const DashboardPage = () => {
         key={index}
         size={20}
         className={`${
-          index < rating
-            ? 'text-gold fill-gold'
-            : 'text-gold/30'
-        } ${interactive ? 'cursor-pointer hover:text-gold' : ''}`}
+          index < rating ? "text-gold fill-gold" : "text-gold/30"
+        } ${interactive ? "cursor-pointer hover:text-gold" : ""}`}
         onClick={interactive && onRatingChange ? () => onRatingChange(index + 1) : undefined}
       />
-    ));
-  };
+    ))
+  }
 
   const sidebarItems = [
-    { id: 'overview', label: 'Overview', icon: Home },
-    { id: 'cart', label: 'Shopping Cart', icon: ShoppingCart, badge: cart.length },
-    { id: 'orders', label: 'My Orders', icon: Package, badge: orders.length },
-    { id: 'reviews', label: 'My Reviews', icon: Star, badge: userReviews.length },
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'settings', label: 'Settings', icon: Settings }
-  ];
+    { id: "overview", label: "Overview", icon: Home },
+    { id: "products", label: "My Products", icon: Gift, badge: purchasedProductsCount },
+    { id: "cart", label: "Shopping Cart", icon: ShoppingCart, badge: cart.length },
+    { id: "orders", label: "My Orders", icon: Package, badge: orders.length },
+    { id: "reviews", label: "My Reviews", icon: Star, badge: userReviews.length },
+    { id: "profile", label: "Profile", icon: User },
+    { id: "settings", label: "Settings", icon: Settings },
+  ]
 
   const getOrderStatusSteps = (status: string) => {
     const steps = [
-      { key: 'pending', label: 'Order Placed', icon: Package },
-      { key: 'processing', label: 'Processing', icon: Settings },
-      { key: 'shipped', label: 'Shipped', icon: Truck },
-      { key: 'delivered', label: 'Delivered', icon: Home }
-    ];
+      { key: "pending", label: "Order Placed", icon: Package },
+      { key: "processing", label: "Processing", icon: Settings },
+      { key: "shipped", label: "Shipped", icon: Truck },
+      { key: "delivered", label: "Delivered", icon: Home },
+    ]
 
-    const statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
-    const currentIndex = statusOrder.indexOf(status.toLowerCase());
+    const statusOrder = ["pending", "processing", "shipped", "delivered"]
+    const currentIndex = statusOrder.indexOf(status.toLowerCase())
 
     return steps.map((step, index) => ({
       ...step,
       completed: index <= currentIndex,
-      current: index === currentIndex
-    }));
-  };
+      current: index === currentIndex,
+    }))
+  }
+
+  const getStatusColor = (status: string): string => {
+    const normalizedStatus = status.toLowerCase()
+    switch (normalizedStatus) {
+      case "pending":
+        return "text-yellow-600 bg-yellow-100"
+      case "processing":
+        return "text-blue-600 bg-blue-100"
+      case "shipped":
+      case "shipping":
+        return "text-purple-600 bg-purple-100"
+      case "delivered":
+        return "text-green-600 bg-green-100"
+      case "cancelled":
+      case "canceled":
+        return "text-red-600 bg-red-100"
+      default:
+        return "text-gray-600 bg-gray-100"
+    }
+  }
+
+  const canCancelOrder = (status: string): boolean => {
+    const normalizedStatus = status.toLowerCase()
+    return normalizedStatus === "pending" || normalizedStatus === "processing"
+  }
+
+  const canReviewOrder = (status: string): boolean => {
+    const normalizedStatus = status.toLowerCase()
+    return normalizedStatus === "delivered"
+  }
 
   return (
     <div className="min-h-screen pt-24 bg-gray-50">
@@ -203,7 +381,9 @@ const DashboardPage = () => {
                 <User className="text-gold" size={24} />
               </div>
               <div>
-                <h3 className="font-semibold text-charcoal">{user.firstName} {user.lastName}</h3>
+                <h3 className="font-semibold text-charcoal">
+                  {user.firstName} {user.lastName}
+                </h3>
                 <p className="text-sm text-charcoal/60">{user.email}</p>
               </div>
             </div>
@@ -217,8 +397,8 @@ const DashboardPage = () => {
                     onClick={() => setActiveTab(item.id as any)}
                     className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
                       activeTab === item.id
-                        ? 'bg-gold/10 text-gold border border-gold/20'
-                        : 'text-charcoal/70 hover:bg-gray-50 hover:text-charcoal'
+                        ? "bg-gold/10 text-gold border border-gold/20"
+                        : "text-charcoal/70 hover:bg-gray-50 hover:text-charcoal"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -230,7 +410,10 @@ const DashboardPage = () => {
                         {item.badge}
                       </span>
                     )}
-                    <ChevronRight size={16} className={`transition-transform ${activeTab === item.id ? 'rotate-90' : ''}`} />
+                    <ChevronRight
+                      size={16}
+                      className={`transition-transform ${activeTab === item.id ? "rotate-90" : ""}`}
+                    />
                   </button>
                 </li>
               ))}
@@ -251,17 +434,27 @@ const DashboardPage = () => {
         {/* Main Content */}
         <div className="flex-1 p-8">
           {/* Overview Tab */}
-          {activeTab === 'overview' && (
+          {activeTab === "overview" && (
             <AnimatedSection>
               <div className="mb-8">
-                <h1 className="text-3xl font-serif text-charcoal mb-2">
-                  Welcome back, {user.firstName}!
-                </h1>
+                <h1 className="text-3xl font-serif text-charcoal mb-2">Welcome back, {user.firstName}!</h1>
                 <p className="text-charcoal/70">Here's what's happening with your account</p>
               </div>
 
               {/* Quick Stats */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-charcoal/60">My Products</p>
+                      <p className="text-2xl font-bold text-charcoal">{purchasedProductsCount}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <Gift className="text-green-600" size={24} />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                   <div className="flex items-center justify-between">
                     <div>
@@ -280,8 +473,8 @@ const DashboardPage = () => {
                       <p className="text-sm text-charcoal/60">Total Orders</p>
                       <p className="text-2xl font-bold text-charcoal">{orders.length}</p>
                     </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Package className="text-green-600" size={24} />
+                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Package className="text-purple-600" size={24} />
                     </div>
                   </div>
                 </div>
@@ -297,53 +490,63 @@ const DashboardPage = () => {
                     </div>
                   </div>
                 </div>
-
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-charcoal/60">Member Since</p>
-                      <p className="text-sm font-bold text-charcoal">
-                        {new Date(user.joinedDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Calendar className="text-purple-600" size={24} />
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Recent Orders */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-serif text-charcoal mb-4">Recent Orders</h2>
-                {orders.slice(0, 3).map((order) => (
-                  <div key={order.id} className="flex items-center justify-between py-4 border-b border-gray-100 last:border-b-0">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <Package size={20} className="text-charcoal/60" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-charcoal">Order #{order.id}</p>
-                        <p className="text-sm text-charcoal/60">{new Date(order.orderDate).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                        {order.status}
-                      </span>
-                      <p className="text-sm font-medium text-charcoal mt-1">${order.totalAmount}</p>
-                    </div>
+                {ordersLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold mx-auto"></div>
+                    <p className="text-charcoal/60 mt-2">Loading orders...</p>
                   </div>
-                ))}
-                {orders.length === 0 && (
+                ) : ordersError ? (
+                  <div className="text-center py-8">
+                    <p className="text-red-600">{ordersError}</p>
+                  </div>
+                ) : orders.length === 0 ? (
                   <p className="text-center text-charcoal/60 py-8">No orders yet</p>
+                ) : (
+                  orders.slice(0, 3).map((order) => (
+                    <div
+                      key={order.id}
+                      className="flex items-center justify-between py-4 border-b border-gray-100 last:border-b-0"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Package size={20} className="text-charcoal/60" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-charcoal">Order #{order.id}</p>
+                          <p className="text-sm text-charcoal/60">{new Date(order.orderDate).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+                          {order.status}
+                        </span>
+                        <p className="text-sm font-medium text-charcoal mt-1">${order.totalAmount}</p>
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
             </AnimatedSection>
           )}
 
+          {/* My Products Tab */}
+          {activeTab === "products" && (
+            <AnimatedSection>
+              <div className="mb-6">
+                <h1 className="text-2xl font-serif text-charcoal mb-2">My Products</h1>
+                <p className="text-charcoal/70">Access your purchased singing bowls and their resources</p>
+              </div>
+              <PurchasedProducts orders={[]} />
+            </AnimatedSection>
+          )}
+
           {/* Cart Tab */}
-          {activeTab === 'cart' && (
+          {activeTab === "cart" && (
             <AnimatedSection>
               <div className="mb-6">
                 <h1 className="text-2xl font-serif text-charcoal mb-2">Shopping Cart</h1>
@@ -360,15 +563,20 @@ const DashboardPage = () => {
                 ) : (
                   <div className="space-y-4">
                     {cart.map((item) => (
-                      <div key={item.product.id} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:border-gold/30 transition-colors">
-                        <img 
-                          src={item.product.image[0]} 
+                      <div
+                        key={item.product.id}
+                        className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:border-gold/30 transition-colors"
+                      >
+                        <img
+                          src={item.product.image || "/placeholder.svg?height=80&width=80"}
                           alt={item.product.name}
                           className="w-20 h-20 object-cover rounded-lg"
                         />
                         <div className="flex-1">
                           <h3 className="font-semibold text-charcoal mb-1">{item.product.name}</h3>
-                          <p className="text-charcoal/70 text-sm mb-2">{item.product.size} • {item.product.tone}</p>
+                          <p className="text-charcoal/70 text-sm mb-2">
+                            {item.product.size} • {item.product.tone}
+                          </p>
                           <p className="text-gold font-bold text-lg">${item.product.price}</p>
                         </div>
                         <div className="flex items-center gap-3">
@@ -394,17 +602,20 @@ const DashboardPage = () => {
                         </button>
                       </div>
                     ))}
-                    
+
                     <div className="border-t border-gray-200 pt-4 mt-6">
                       <div className="flex justify-between items-center mb-4">
                         <span className="text-lg font-semibold text-charcoal">Total:</span>
                         <span className="text-2xl font-bold text-gold">
-                          ${cart.reduce((total, item) => total + (item.product.price * item.quantity), 0).toFixed(2)}
+                          ${cart.reduce((total, item) => total + item.product.price * item.quantity, 0).toFixed(2)}
                         </span>
                       </div>
-                      <button className="w-full bg-gold hover:bg-gold/90 text-white py-3 rounded-lg font-semibold transition-colors">
+                      <Link
+                        to="/checkout"
+                        className="w-full bg-gold hover:bg-gold/90 text-white py-3 rounded-lg font-semibold transition-colors text-center"
+                      >
                         Proceed to Checkout
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -413,7 +624,7 @@ const DashboardPage = () => {
           )}
 
           {/* Orders Tab */}
-          {activeTab === 'orders' && (
+          {activeTab === "orders" && (
             <AnimatedSection>
               <div className="mb-6">
                 <h1 className="text-2xl font-serif text-charcoal mb-2">My Orders</h1>
@@ -421,7 +632,18 @@ const DashboardPage = () => {
               </div>
 
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                {orders.length === 0 ? (
+                {ordersLoading ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div>
+                    <p className="text-charcoal/60">Loading your orders...</p>
+                  </div>
+                ) : ordersError ? (
+                  <div className="text-center py-12">
+                    <Package size={64} className="mx-auto text-red-300 mb-4" />
+                    <p className="text-xl text-red-600 mb-2">Error Loading Orders</p>
+                    <p className="text-red-500">{ordersError}</p>
+                  </div>
+                ) : orders.length === 0 ? (
                   <div className="text-center py-12">
                     <Package size={64} className="mx-auto text-charcoal/30 mb-4" />
                     <p className="text-xl text-charcoal/70 mb-2">No orders found</p>
@@ -435,7 +657,9 @@ const DashboardPage = () => {
                           <div className="flex justify-between items-center">
                             <div className="flex items-center gap-4">
                               <h3 className="font-semibold text-charcoal">Order #{order.id}</h3>
-                              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+                              <span
+                                className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}
+                              >
                                 {order.status}
                               </span>
                             </div>
@@ -446,7 +670,7 @@ const DashboardPage = () => {
                                 className="flex items-center gap-2 px-3 py-1 bg-gold/20 text-gold rounded hover:bg-gold/30 text-sm"
                               >
                                 <Eye size={16} />
-                                {selectedOrder === order.id ? 'Hide Details' : 'Track Order'}
+                                {selectedOrder === order.id ? "Hide Details" : "Track Order"}
                               </button>
                             </div>
                           </div>
@@ -463,22 +687,28 @@ const DashboardPage = () => {
                               <div className="flex items-center justify-between">
                                 {getOrderStatusSteps(order.status).map((step, index) => (
                                   <div key={step.key} className="flex flex-col items-center flex-1">
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${
-                                      step.completed ? 'bg-green-100 text-green-600' : 
-                                      step.current ? 'bg-gold/20 text-gold' : 'bg-gray-100 text-gray-400'
-                                    }`}>
+                                    <div
+                                      className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${
+                                        step.completed
+                                          ? "bg-green-100 text-green-600"
+                                          : step.current
+                                            ? "bg-gold/20 text-gold"
+                                            : "bg-gray-100 text-gray-400"
+                                      }`}
+                                    >
                                       <step.icon size={20} />
                                     </div>
-                                    <span className={`text-sm font-medium ${
-                                      step.completed ? 'text-green-600' : 
-                                      step.current ? 'text-gold' : 'text-gray-400'
-                                    }`}>
+                                    <span
+                                      className={`text-sm font-medium ${
+                                        step.completed ? "text-green-600" : step.current ? "text-gold" : "text-gray-400"
+                                      }`}
+                                    >
                                       {step.label}
                                     </span>
                                     {index < getOrderStatusSteps(order.status).length - 1 && (
-                                      <div className={`h-1 w-full mt-2 ${
-                                        step.completed ? 'bg-green-200' : 'bg-gray-200'
-                                      }`} />
+                                      <div
+                                        className={`h-1 w-full mt-2 ${step.completed ? "bg-green-200" : "bg-gray-200"}`}
+                                      />
                                     )}
                                   </div>
                                 ))}
@@ -489,28 +719,34 @@ const DashboardPage = () => {
                             <div className="space-y-3 mb-4">
                               <h4 className="font-semibold text-charcoal">Order Items</h4>
                               {order.items.map((item) => (
-                                <div key={item.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                                  <img 
-                                    src={item.productImage} 
+                                <div key={item.productId} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                                  <img
+                                    src={item.productImage || "/placeholder.svg"}
                                     alt={item.productName}
                                     className="w-16 h-16 object-cover rounded-lg"
                                   />
                                   <div className="flex-1">
                                     <p className="font-medium text-charcoal">{item.productName}</p>
-                                    <p className="text-charcoal/70 text-sm">Qty: {item.quantity} • ${item.price}</p>
+                                    <p className="text-charcoal/70 text-sm">
+                                      Qty: {item.quantity} • ${item.price}
+                                    </p>
                                   </div>
                                   {canReviewOrder(order.status) && (
                                     <button
-                                      onClick={() => openReviewModal(item.productId, order.id, item.productName, item.productImage)}
+                                      onClick={() =>
+                                        openReviewModal(item.productId, order.id, item.productName, item.productImage)
+                                      }
                                       className="px-3 py-1 bg-gold/20 text-gold rounded hover:bg-gold/30 text-sm"
                                     >
-                                      {getUserReviewForProduct(user._id, item.productId, order.id) ? 'Edit Review' : 'Write Review'}
+                                      {getUserReviewForProduct(user._id, item.productId, order.id)
+                                        ? "Edit Review"
+                                        : "Write Review"}
                                     </button>
                                   )}
                                 </div>
                               ))}
                             </div>
-                            
+
                             {canCancelOrder(order.status) && (
                               <button
                                 onClick={() => handleCancelOrder(order.id)}
@@ -530,7 +766,7 @@ const DashboardPage = () => {
           )}
 
           {/* Reviews Tab */}
-          {activeTab === 'reviews' && (
+          {activeTab === "reviews" && (
             <AnimatedSection>
               <div className="mb-6">
                 <h1 className="text-2xl font-serif text-charcoal mb-2">My Reviews</h1>
@@ -547,19 +783,20 @@ const DashboardPage = () => {
                 ) : (
                   <div className="space-y-6">
                     {userReviews.map((review) => (
-                      <div key={review.id} className="border border-gray-200 rounded-lg p-6 hover:border-gold/30 transition-colors">
+                      <div
+                        key={review.id}
+                        className="border border-gray-200 rounded-lg p-6 hover:border-gold/30 transition-colors"
+                      >
                         <div className="flex items-start gap-4">
-                          <img 
-                            src={review.productImage} 
+                          <img
+                            src={review.productImage || "/placeholder.svg"}
                             alt={review.productName}
                             className="w-20 h-20 object-cover rounded-lg"
                           />
                           <div className="flex-1">
                             <h3 className="font-semibold text-charcoal mb-2">{review.productName}</h3>
                             <div className="flex items-center gap-2 mb-3">
-                              <div className="flex">
-                                {renderStars(review.rating)}
-                              </div>
+                              <div className="flex">{renderStars(review.rating)}</div>
                               <span className="text-charcoal/70 text-sm">
                                 {new Date(review.date).toLocaleDateString()}
                               </span>
@@ -568,7 +805,14 @@ const DashboardPage = () => {
                           </div>
                           <div className="flex gap-2">
                             <button
-                              onClick={() => openReviewModal(review.productId, review.orderId, review.productName, review.productImage)}
+                              onClick={() =>
+                                openReviewModal(
+                                  review.productId,
+                                  review.orderId,
+                                  review.productName,
+                                  review.productImage,
+                                )
+                              }
                               className="p-2 text-gold hover:bg-gold/10 rounded-lg transition-colors"
                             >
                               <Edit size={18} />
@@ -590,7 +834,7 @@ const DashboardPage = () => {
           )}
 
           {/* Profile Tab */}
-          {activeTab === 'profile' && (
+          {activeTab === "profile" && (
             <AnimatedSection>
               <div className="mb-6">
                 <h1 className="text-2xl font-serif text-charcoal mb-2">Profile Information</h1>
@@ -604,7 +848,9 @@ const DashboardPage = () => {
                       <User className="text-gold" size={32} />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-charcoal">{user.firstName} {user.lastName}</h3>
+                      <h3 className="text-xl font-semibold text-charcoal">
+                        {user.firstName} {user.lastName}
+                      </h3>
                       <p className="text-charcoal/60">{user.email}</p>
                     </div>
                   </div>
@@ -627,8 +873,8 @@ const DashboardPage = () => {
                       </button>
                       <button
                         onClick={() => {
-                          setIsEditingProfile(false);
-                          setProfileData(user);
+                          setIsEditingProfile(false)
+                          setProfileData(user)
                         }}
                         className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-charcoal rounded-lg hover:bg-gray-200 transition-colors"
                       >
@@ -646,8 +892,8 @@ const DashboardPage = () => {
                       {isEditingProfile ? (
                         <input
                           type="text"
-                          value={profileData.firstName || ''}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
+                          value={profileData.firstName || ""}
+                          onChange={(e) => setProfileData((prev) => ({ ...prev, firstName: e.target.value }))}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                         />
                       ) : (
@@ -662,8 +908,8 @@ const DashboardPage = () => {
                       {isEditingProfile ? (
                         <input
                           type="text"
-                          value={profileData.lastName || ''}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
+                          value={profileData.lastName || ""}
+                          onChange={(e) => setProfileData((prev) => ({ ...prev, lastName: e.target.value }))}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                         />
                       ) : (
@@ -689,15 +935,15 @@ const DashboardPage = () => {
                       {isEditingProfile ? (
                         <input
                           type="tel"
-                          value={profileData.phone || ''}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                          value={profileData.phone || ""}
+                          onChange={(e) => setProfileData((prev) => ({ ...prev, phone: e.target.value }))}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                         />
                       ) : (
                         <div className="px-4 py-3 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-2">
                             <Phone size={16} className="text-charcoal/50" />
-                            <p className="text-charcoal">{user.phone || 'Not provided'}</p>
+                            <p className="text-charcoal">{user.phone || "Not provided"}</p>
                           </div>
                         </div>
                       )}
@@ -712,32 +958,38 @@ const DashboardPage = () => {
                           <input
                             type="text"
                             placeholder="Street Address"
-                            value={profileData.address?.street || ''}
-                            onChange={(e) => setProfileData(prev => ({ 
-                              ...prev, 
-                              address: { ...prev.address, street: e.target.value } 
-                            }))}
+                            value={profileData.address?.street || ""}
+                            onChange={(e) =>
+                              setProfileData((prev) => ({
+                                ...prev,
+                                address: { ...prev.address, street: e.target.value },
+                              }))
+                            }
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                           />
                           <div className="grid grid-cols-2 gap-3">
                             <input
                               type="text"
                               placeholder="City"
-                              value={profileData.address?.city || ''}
-                              onChange={(e) => setProfileData(prev => ({ 
-                                ...prev, 
-                                address: { ...prev.address, city: e.target.value } 
-                              }))}
+                              value={profileData.address?.city || ""}
+                              onChange={(e) =>
+                                setProfileData((prev) => ({
+                                  ...prev,
+                                  address: { ...prev.address, city: e.target.value },
+                                }))
+                              }
                               className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                             />
                             <input
                               type="text"
                               placeholder="State"
-                              value={profileData.address?.state || ''}
-                              onChange={(e) => setProfileData(prev => ({ 
-                                ...prev, 
-                                address: { ...prev.address, state: e.target.value } 
-                              }))}
+                              value={profileData.address?.state || ""}
+                              onChange={(e) =>
+                                setProfileData((prev) => ({
+                                  ...prev,
+                                  address: { ...prev.address, state: e.target.value },
+                                }))
+                              }
                               className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                             />
                           </div>
@@ -745,21 +997,25 @@ const DashboardPage = () => {
                             <input
                               type="text"
                               placeholder="ZIP Code"
-                              value={profileData.address?.zipCode || ''}
-                              onChange={(e) => setProfileData(prev => ({ 
-                                ...prev, 
-                                address: { ...prev.address, zipCode: e.target.value } 
-                              }))}
+                              value={profileData.address?.zipCode || ""}
+                              onChange={(e) =>
+                                setProfileData((prev) => ({
+                                  ...prev,
+                                  address: { ...prev.address, zipCode: e.target.value },
+                                }))
+                              }
                               className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                             />
                             <input
                               type="text"
                               placeholder="Country"
-                              value={profileData.address?.country || ''}
-                              onChange={(e) => setProfileData(prev => ({ 
-                                ...prev, 
-                                address: { ...prev.address, country: e.target.value } 
-                              }))}
+                              value={profileData.address?.country || ""}
+                              onChange={(e) =>
+                                setProfileData((prev) => ({
+                                  ...prev,
+                                  address: { ...prev.address, country: e.target.value },
+                                }))
+                              }
                               className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                             />
                           </div>
@@ -771,8 +1027,10 @@ const DashboardPage = () => {
                             <div>
                               {user.address ? (
                                 <p className="text-charcoal">
-                                  {user.address.street}<br />
-                                  {user.address.city}, {user.address.state} {user.address.zipCode}<br />
+                                  {user.address.street}
+                                  <br />
+                                  {user.address.city}, {user.address.state} {user.address.zipCode}
+                                  <br />
                                   {user.address.country}
                                 </p>
                               ) : (
@@ -800,7 +1058,7 @@ const DashboardPage = () => {
           )}
 
           {/* Settings Tab */}
-          {activeTab === 'settings' && (
+          {activeTab === "settings" && (
             <AnimatedSection>
               <div className="mb-6">
                 <h1 className="text-2xl font-serif text-charcoal mb-2">Account Settings</h1>
@@ -902,7 +1160,7 @@ const DashboardPage = () => {
           <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-serif text-charcoal">
-                {reviewModal.existingReview ? 'Edit Review' : 'Write Review'}
+                {reviewModal.existingReview ? "Edit Review" : "Write Review"}
               </h3>
               <button
                 onClick={() => setReviewModal({ isOpen: false })}
@@ -913,8 +1171,8 @@ const DashboardPage = () => {
             </div>
 
             <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-              <img 
-                src={reviewModal.productImage} 
+              <img
+                src={reviewModal.productImage || "/placeholder.svg"}
                 alt={reviewModal.productName}
                 className="w-16 h-16 object-cover rounded-lg"
               />
@@ -924,9 +1182,7 @@ const DashboardPage = () => {
             <div className="mb-6">
               <label className="block text-sm font-medium text-charcoal mb-3">Rating</label>
               <div className="flex gap-2">
-                {renderStars(reviewForm.rating, true, (rating) => 
-                  setReviewForm(prev => ({ ...prev, rating }))
-                )}
+                {renderStars(reviewForm.rating, true, (rating) => setReviewForm((prev) => ({ ...prev, rating })))}
               </div>
             </div>
 
@@ -934,7 +1190,7 @@ const DashboardPage = () => {
               <label className="block text-sm font-medium text-charcoal mb-3">Your Review</label>
               <textarea
                 value={reviewForm.comment}
-                onChange={(e) => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
+                onChange={(e) => setReviewForm((prev) => ({ ...prev, comment: e.target.value }))}
                 rows={5}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent resize-none"
                 placeholder="Share your experience with this product..."
@@ -946,7 +1202,7 @@ const DashboardPage = () => {
                 onClick={handleReviewSubmit}
                 className="flex-1 bg-gold text-white py-3 rounded-lg hover:bg-gold/90 font-semibold transition-colors"
               >
-                {reviewModal.existingReview ? 'Update Review' : 'Submit Review'}
+                {reviewModal.existingReview ? "Update Review" : "Submit Review"}
               </button>
               <button
                 onClick={() => setReviewModal({ isOpen: false })}
@@ -959,7 +1215,7 @@ const DashboardPage = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default DashboardPage;
+export default DashboardPage

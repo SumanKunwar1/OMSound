@@ -2,19 +2,64 @@
 
 import { useEffect, useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
-import { CheckCircle, Package, Truck, Mail, Phone, MapPin, ArrowRight, Download, Share2 } from "lucide-react"
+import {
+  CheckCircle,
+  Package,
+  Truck,
+  Mail,
+  Phone,
+  MapPin,
+  ArrowRight,
+  Download,
+  Share2,
+  AlertCircle,
+} from "lucide-react"
 import SEOHelmet from "../components/seo/SEOHelmet"
 import { useAuth } from "../context/AuthContext"
 import { useOrder } from "../context/OrderContext"
 import AnimatedSection from "../components/utils/AnimatedSection"
+// Removed 'import axios from "axios"' to resolve the "value is never read" warning
+
+interface Order {
+  _id: string
+  userId: string
+  items: Array<{
+    productId: string
+    productName: string
+    productImage: string
+    quantity: number
+    price: number
+  }>
+  shippingAddress: {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    street: string
+    city: string
+    state: string
+    zipCode: string
+    country: string
+  }
+  paymentMethod: "cod" | "paypal"
+  subtotal: number
+  deliveryCharge: number
+  tax: number
+  totalAmount: number
+  status: string
+  orderDate: string
+  estimatedDelivery: string
+  trackingNumber?: string
+}
 
 const OrderConfirmationPage = () => {
   const { orderId } = useParams<{ orderId: string }>()
   const { user } = useAuth()
   const { getOrder } = useOrder()
   const navigate = useNavigate()
-  const [order, setOrder] = useState<any>(null)
+  const [order, setOrder] = useState<Order | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) {
@@ -29,11 +74,30 @@ const OrderConfirmationPage = () => {
 
     const fetchOrder = async () => {
       try {
+        setIsLoading(true)
+        setError(null)
         const orderData = await getOrder(orderId)
         setOrder(orderData)
-      } catch (error) {
-        console.error("Failed to fetch order:", error)
-        navigate("/dashboard")
+      } catch (err: any) {
+        console.error("Failed to fetch order:", err)
+        // Check if it's an Axios error and specifically a timeout
+        if (
+          err &&
+          typeof err === "object" &&
+          "isAxiosError" in err &&
+          err.isAxiosError &&
+          err.code === "ECONNABORTED"
+        ) {
+          setError(
+            "Failed to load order details: The request timed out. Please check your internet connection or try again later.",
+          )
+        } else if (err.response?.status === 404) {
+          setError("Order not found. It might have been cancelled or never existed.")
+        } else if (err.response?.status === 401 || err.response?.status === 403) {
+          setError("You are not authorized to view this order. Please log in with the correct account.")
+        } else {
+          setError(err.message || "Failed to load order details. Please try again.")
+        }
       } finally {
         setIsLoading(false)
       }
@@ -43,9 +107,44 @@ const OrderConfirmationPage = () => {
   }, [orderId, user, navigate, getOrder])
 
   const handleDownloadInvoice = () => {
-    // Simulate invoice download
+    if (!order) return
+
+    // Create a simple invoice content
+    const invoiceContent = `
+INVOICE - OMSound Nepal
+Order ID: ${order._id}
+Date: ${new Date(order.orderDate).toLocaleDateString()}
+
+BILLING TO:
+${order.shippingAddress.firstName} ${order.shippingAddress.lastName}
+${order.shippingAddress.street}
+${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zipCode}
+${order.shippingAddress.country}
+Email: ${order.shippingAddress.email}
+Phone: ${order.shippingAddress.phone}
+
+ITEMS:
+${order.items
+  .map(
+    (item) =>
+      `${item.productName} - Qty: ${item.quantity} - $${item.price.toFixed(2)} each - Total: $${(item.price * item.quantity).toFixed(2)}`,
+  )
+  .join("\n")}
+
+SUMMARY:
+Subtotal: $${order.subtotal.toFixed(2)}
+Delivery: ${order.deliveryCharge === 0 ? "Free" : `$${order.deliveryCharge.toFixed(2)}`}
+Tax: $${order.tax.toFixed(2)}
+Total: $${order.totalAmount.toFixed(2)}
+
+Payment Method: ${order.paymentMethod === "cod" ? "Cash on Delivery" : "PayPal"}
+Status: ${order.status}
+
+Thank you for your business!
+    `
+
     const element = document.createElement("a")
-    const file = new Blob([`Invoice for Order #${orderId}`], { type: "text/plain" })
+    const file = new Blob([invoiceContent], { type: "text/plain" })
     element.href = URL.createObjectURL(file)
     element.download = `invoice-${orderId}.txt`
     document.body.appendChild(element)
@@ -66,14 +165,24 @@ const OrderConfirmationPage = () => {
       }
     } else {
       // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href)
-      alert("Order link copied to clipboard!")
+      try {
+        await navigator.clipboard.writeText(window.location.href)
+        alert("Order link copied to clipboard!")
+      } catch (error) {
+        console.log("Failed to copy to clipboard:", error)
+      }
     }
   }
 
   if (isLoading) {
     return (
       <div className="min-h-screen pt-24 bg-gray-50 flex items-center justify-center">
+        <SEOHelmet
+          title="Loading Order | OMSound Nepal"
+          description="Loading your order confirmation"
+          noindex={true}
+          keywords=""
+        />
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div>
           <p className="text-charcoal">Loading order details...</p>
@@ -82,14 +191,37 @@ const OrderConfirmationPage = () => {
     )
   }
 
-  if (!order) {
+  if (error || !order) {
     return (
       <div className="min-h-screen pt-24 bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-serif text-charcoal mb-4">Order not found</h2>
-          <Link to="/dashboard" className="text-gold hover:text-gold/80">
-            Return to Dashboard
-          </Link>
+        <SEOHelmet
+          title="Order Not Found | OMSound Nepal"
+          description="Order confirmation not found"
+          noindex={true}
+          keywords=""
+        />
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle size={40} className="text-red-600" />
+          </div>
+          <h2 className="text-2xl font-serif text-charcoal mb-4">
+            {error ? "Error Loading Order" : "Order Not Found"}
+          </h2>
+          <p className="text-charcoal/70 mb-6">{error || "We couldn't find the order you're looking for."}</p>
+          <div className="space-y-3">
+            <Link
+              to="/dashboard"
+              className="block w-full bg-gold text-white py-3 px-6 rounded-lg hover:bg-gold/90 transition-colors"
+            >
+              Go to Dashboard
+            </Link>
+            <Link
+              to="/shop"
+              className="block w-full bg-gray-100 text-charcoal py-3 px-6 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Continue Shopping
+            </Link>
+          </div>
         </div>
       </div>
     )
@@ -98,9 +230,11 @@ const OrderConfirmationPage = () => {
   return (
     <div className="min-h-screen pt-24 bg-gray-50">
       <SEOHelmet
-              title={`Order Confirmation - ${orderId} | OMSound Nepal`}
-              description="Your order has been confirmed. Thank you for choosing OMSound Nepal."
-              noindex={true} keywords={""}      />
+        title={`Order Confirmation - ${orderId} | OMSound Nepal`}
+        description="Your order has been confirmed. Thank you for choosing OMSound Nepal."
+        noindex={true}
+        keywords=""
+      />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Success Header */}
@@ -142,7 +276,7 @@ const OrderConfirmationPage = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-charcoal/70">Status:</span>
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium capitalize">
                     {order.status}
                   </span>
                 </div>
@@ -201,7 +335,7 @@ const OrderConfirmationPage = () => {
             <h2 className="text-xl font-semibold text-charcoal mb-4">Order Items</h2>
 
             <div className="space-y-4">
-              {order.items.map((item: any, index: number) => (
+              {order.items.map((item, index) => (
                 <div key={index} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
                   <img
                     src={item.productImage || "/placeholder.svg"}
