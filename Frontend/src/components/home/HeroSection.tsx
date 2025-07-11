@@ -26,7 +26,7 @@ const HeroSection = () => {
           loop 
           muted 
           playsInline
-          poster="https://images.pexels.com/photos/7969333/pexels-photo-7969333.jpeg"
+          poster="https://res.cloudinary.com/dei0ymk1p/image/upload/v1752235489/Hero_Banner_h6auib.jpg"
         >
           <source 
             src="https://player.vimeo.com/external/538378273.sd.mp4?s=49938555c1b3f8b28889064c052386843e4e75e9&profile_id=164&oauth2_token_id=57447761" 

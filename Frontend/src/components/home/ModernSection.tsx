@@ -90,7 +90,7 @@ const ModernSection = () => {
             <div className="md:flex">
               <div className="md:w-2/5 relative">
                 <img 
-                  src="https://images.pexels.com/photos/3768911/pexels-photo-3768911.jpeg" 
+                  src="https://res.cloudinary.com/dei0ymk1p/image/upload/v1752235490/bringing-tranquility-to-contemporary-lif_NEhEtk6BS-6YDXRbwSnjqA_PUNVxB3aQEuUBGtdvd9pAw_drmgvh.jpg" 
                   alt="Modern wellness" 
                   className="w-full h-full object-cover"
                 />
