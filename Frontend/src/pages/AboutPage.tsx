@@ -319,7 +319,7 @@ const AboutPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
               <h2 className="text-5xl font-serif text-navy mb-8 relative">
-                Our Sacred Journey
+                Our Journey
                 <div className="absolute -bottom-2 left-0 w-20 h-1 bg-gradient-to-r from-gold to-yellow-400"></div>
               </h2>
               <p className="text-lg text-gray-700 leading-relaxed">

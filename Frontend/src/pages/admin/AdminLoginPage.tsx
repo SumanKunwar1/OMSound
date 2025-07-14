@@ -1,42 +1,42 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { Lock, User, Eye, EyeOff } from 'lucide-react';
-import { useAdminAuth } from '../../context/AdminAuthContext';
+"use client"
+
+import type React from "react"
+import { useState } from "react"
+import { Navigate } from "react-router-dom"
+import { Lock, User, Eye, EyeOff } from "lucide-react"
+import { useAdminAuth } from "../../context/AdminAuthContext"
 
 const AdminLoginPage = () => {
   const [credentials, setCredentials] = useState({
-    username: '',
-    password: ''
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const { adminUser, login, isLoading } = useAdminAuth();
+    username: "", // This will now be treated as email for login
+    password: "",
+  })
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState("")
+  const { adminUser, login, isLoading } = useAdminAuth()
 
   if (adminUser) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/admin" replace />
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    
-    try {
-      const success = await login(credentials.username, credentials.password);
-      if (!success) {
-        setError('Invalid username or password');
-      }
-    } catch (err) {
-      setError('An error occurred during login');
+    e.preventDefault()
+    setError("")
+
+    // Use username field as email for login
+    const success = await login(credentials.username, credentials.password)
+    if (!success) {
+      setError("Invalid email or password") // Updated error message
     }
-  };
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setCredentials(prev => ({
+    const { name, value } = e.target
+    setCredentials((prev) => ({
       ...prev,
-      [name]: value
-    }));
-  };
+      [name]: value,
+    }))
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-navy via-navy/95 to-charcoal flex items-center justify-center p-4">
@@ -50,30 +50,26 @@ const AdminLoginPage = () => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
+            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{error}</div>}
 
-            {/* Username Field */}
+            {/* Email Field (formerly Username) */}
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-ivory mb-2">
-                Username
+                Email
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User className="h-5 w-5 text-gold/60" />
                 </div>
                 <input
-                  type="text"
+                  type="email" // Changed type to email
                   id="username"
                   name="username"
                   value={credentials.username}
                   onChange={handleInputChange}
                   required
                   className="w-full pl-10 pr-4 py-3 bg-navy border border-gold/30 rounded-md text-ivory placeholder-ivory/50 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
-                  placeholder="Enter your username"
+                  placeholder="Enter your email" // Updated placeholder
                 />
               </div>
             </div>
@@ -88,7 +84,7 @@ const AdminLoginPage = () => {
                   <Lock className="h-5 w-5 text-gold/60" />
                 </div>
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   value={credentials.password}
@@ -119,23 +115,27 @@ const AdminLoginPage = () => {
                   Signing in...
                 </div>
               ) : (
-                'Sign In'
+                "Sign In"
               )}
             </button>
           </form>
 
           {/* Demo Credentials */}
           <div className="mt-8 p-4 bg-navy/30 rounded-lg border border-gold/20">
-            <h3 className="text-sm font-medium text-gold mb-2">Demo Credentials:</h3>
+            <h3 className="text-sm font-medium text-gold mb-2">Admin Credentials:</h3>
             <div className="text-xs text-ivory/70 space-y-1">
-              <p><strong>Admin:</strong> username: admin, password: admin123</p>
-              <p><strong>Sub-Admin:</strong> username: subadmin, password: admin123</p>
+              <p>
+                <strong>Email:</strong> sammihimalayan@gmail.com
+              </p>
+              <p>
+                <strong>Password:</strong> @m$@UnDNe:)
+              </p>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AdminLoginPage;
+export default AdminLoginPage

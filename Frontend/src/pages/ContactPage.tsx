@@ -108,7 +108,7 @@ const ContactPage = () => {
     {
       icon: Mail,
       title: "Email Us",
-      details: ["suman.soundjourneynepal@gmail.com"], // Updated email address
+      details: ["info@omsounds.com"], // Updated email address
       extra: "We typically respond within 24 hours",
       color: "from-purple-500 to-pink-500",
       bgColor: "from-purple-500/20 to-pink-500/20",
