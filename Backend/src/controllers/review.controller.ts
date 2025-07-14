@@ -1,240 +1,179 @@
-import type { Request, Response, NextFunction } from "express"
-import mongoose from "mongoose"
-import Review, { type IReview } from "../models/review.model"
-import { ErrorResponse } from "../utils/errorResponse"
-import User from "../models/users.model" // Assuming User model is available
+// controllers/review.controller.ts
+import type { Request, Response } from "express"
+import { v4 as uuidv4 } from "uuid"
+import type { Review, ReviewStats, CreateReviewData, UpdateReviewData } from "../types/review"
+import { asyncHandler } from "../utils/asyncHandler.utils"
 
-// Helper to transform review for frontend
-const transformReview = (review: IReview) => ({
-  id: review._id.toString(),
-  productId: review.productId,
-  userId: review.userId.toString(),
-  orderId: review.orderId.toString(),
-  reviewerName: review.reviewerName,
-  productName: review.productName,
-  productImage: review.productImage,
-  rating: review.rating,
-  comment: review.comment,
-  date: review.createdAt.toISOString(), // Use createdAt as the review date
-  verified: review.verified,
-})
+// --- Mock Database (In a real app, this would be a database like MongoDB, PostgreSQL, etc.) ---
+const reviews: Review[] = []
 
-// @desc    Create a new review
-// @route   POST /api/reviews
-// @access  Public (for demo, normally Private/Protected)
-export const createReview = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // For demo, we'll use a hardcoded user ID if not provided by auth middleware
-    // In a real app, req.user would be populated by authentication middleware
-    const DEMO_USER_ID = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011")
-    const userId = req.body.userId || DEMO_USER_ID // Use provided userId or demo ID
-    const { productId, orderId, rating, comment, productName, productImage } = req.body
+// Helper to calculate review stats
+const calculateReviewStats = (productId: string): ReviewStats => {
+  const productReviews = reviews.filter((r) => r.productId === productId)
+  const totalReviews = productReviews.length
+  let sumRatings = 0
+  // FIX: Changed "4": "0" to "4": 0 to match the number type in ReviewStats
+  const ratingBreakdown: ReviewStats["ratingBreakdown"] = { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 }
 
-    if (!productId || !orderId || !rating || !comment || !productName || !productImage) {
-      return next(
-        new ErrorResponse("Please provide product ID, order ID, rating, comment, product name, and image", 400),
-      )
+  productReviews.forEach((review) => {
+    sumRatings += review.rating
+    ratingBreakdown[review.rating.toString() as keyof ReviewStats["ratingBreakdown"]]++
+  })
+
+  const averageRating = totalReviews > 0 ? sumRatings / totalReviews : 0
+
+  return {
+    averageRating: Number.parseFloat(averageRating.toFixed(1)),
+    totalReviews,
+    ratingBreakdown,
+  }
+}
+
+// --- Controller Functions ---
+
+/**
+ * Creates a new product review.
+ * POST /api/reviews
+ */
+export const createReview = asyncHandler(async (req: Request, res: Response) => {
+  const { productId, orderId, rating, comment, productName, productImage, userId } = req.body as CreateReviewData
+
+  if (!productId || !orderId || !rating || !comment || !productName || !userId) {
+    return res.status(400).json({ message: "Missing required review fields." })
+  }
+
+  if (rating < 1 || rating > 5) {
+    return res.status(400).json({ message: "Rating must be between 1 and 5." })
+  }
+
+  // Check if a review already exists for this product and order by this user
+  const existingReviewIndex = reviews.findIndex(
+    (r) => r.productId === productId && r.orderId === orderId && r.userId === userId,
+  )
+
+  if (existingReviewIndex !== -1) {
+    // If exists, update it
+    reviews[existingReviewIndex] = {
+      ...reviews[existingReviewIndex],
+      rating,
+      comment,
+      date: new Date().toISOString(),
+      verified: true, // Assuming reviews from delivered orders are verified
     }
-
-    // Fetch user details to get reviewerName
-    const user = await User.findById(userId)
-    if (!user) {
-      return next(new ErrorResponse("User not found", 404))
-    }
-    const reviewerName = `${user.firstName} ${user.lastName}`
-
-    // Check if a review already exists for this user, product, and order
-    const existingReview = await Review.findOne({ userId, productId, orderId })
-    if (existingReview) {
-      return next(new ErrorResponse("You have already reviewed this product for this order.", 400))
-    }
-
-    const review = new Review({
+    return res.status(200).json(reviews[existingReviewIndex])
+  } else {
+    // Otherwise, create new
+    const newReview: Review = {
+      id: uuidv4(),
       productId,
       userId,
       orderId,
-      reviewerName,
+      reviewerName: "User " + userId.substring(0, 4), // Mock reviewer name
       productName,
-      productImage,
+      productImage: productImage || "/placeholder.svg",
       rating,
       comment,
-      verified: true, // For demo, assume verified if placed through dashboard
-    })
-
-    const createdReview = await review.save()
-    res.status(201).json(transformReview(createdReview))
-  } catch (error) {
-    console.error("Create review error:", error)
-    next(error)
-  }
-}
-
-// @desc    Get all reviews for a specific product
-// @route   GET /api/reviews/product/:productId
-// @access  Public
-export const getReviewsByProductId = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { productId } = req.params
-    const reviews = await Review.find({ productId }).sort({ createdAt: -1 })
-    res.json(reviews.map(transformReview))
-  } catch (error) {
-    next(error)
-  }
-}
-
-// @desc    Get all reviews by a specific user
-// @route   GET /api/reviews/user/:userId
-// @access  Public (for demo, normally Private/Protected)
-export const getReviewsByUserId = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // In a real app, you'd verify req.user.id === req.params.userId or admin role
-    const { userId } = req.params
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return next(new ErrorResponse("Invalid User ID", 400))
+      date: new Date().toISOString(),
+      verified: true, // Assuming reviews from delivered orders are verified
     }
-    const reviews = await Review.find({ userId: new mongoose.Types.ObjectId(userId) }).sort({ createdAt: -1 })
-    res.json(reviews.map(transformReview))
-  } catch (error) {
-    next(error)
+    reviews.push(newReview)
+    return res.status(201).json(newReview)
   }
-}
+})
 
-// @desc    Get a single review by ID
-// @route   GET /api/reviews/:id
-// @access  Public
-export const getReviewById = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const review = await Review.findById(req.params.id)
-    if (!review) {
-      return next(new ErrorResponse("Review not found", 404))
-    }
-    res.json(transformReview(review))
-  } catch (error) {
-    next(error)
+/**
+ * Fetches all reviews for a specific product.
+ * GET /api/reviews/product/:productId
+ */
+export const getReviewsByProductId = asyncHandler(async (req: Request, res: Response) => {
+  const { productId } = req.params
+  const productReviews = reviews.filter((review) => review.productId === productId)
+  return res.status(200).json(productReviews)
+})
+
+/**
+ * Fetches all reviews written by a specific user.
+ * GET /api/reviews/user/:userId
+ */
+export const getReviewsByUserId = asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = req.params
+  const userReviews = reviews.filter((review) => review.userId === userId)
+  return res.status(200).json(userReviews)
+})
+
+/**
+ * Fetches a single review by its ID.
+ * GET /api/reviews/:id
+ */
+export const getReviewById = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params
+  const review = reviews.find((r) => r.id === id)
+  if (!review) {
+    return res.status(404).json({ message: "Review not found" })
   }
-}
+  return res.status(200).json(review)
+})
 
-// @desc    Update a review
-// @route   PUT /api/reviews/:id
-// @access  Public (for demo, normally Private/Protected - user must own review)
-export const updateReview = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // For demo, we'll use a hardcoded user ID if not provided by auth middleware
-    const DEMO_USER_ID = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011")
-    const userId = req.body.userId || DEMO_USER_ID // Use provided userId or demo ID
+/**
+ * Updates an existing review.
+ * PUT /api/reviews/:id
+ */
+export const updateReview = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { rating, comment, userId } = req.body as UpdateReviewData
 
-    const { rating, comment } = req.body
-
-    const review = await Review.findById(req.params.id)
-
-    if (!review) {
-      return next(new ErrorResponse("Review not found", 404))
-    }
-
-    // In a real app, ensure req.user.id matches review.userId
-    if (review.userId.toString() !== userId.toString()) {
-      return next(new ErrorResponse("Not authorized to update this review", 403))
-    }
-
-    review.rating = rating || review.rating
-    review.comment = comment || review.comment
-
-    const updatedReview = await review.save()
-    res.json(transformReview(updatedReview))
-  } catch (error) {
-    console.error("Update review error:", error)
-    next(error)
+  const reviewIndex = reviews.findIndex((r) => r.id === id)
+  if (reviewIndex === -1) {
+    return res.status(404).json({ message: "Review not found" })
   }
-}
 
-// @desc    Delete a review
-// @route   DELETE /api/reviews/:id
-// @access  Public (for demo, normally Private/Protected - user must own review)
-export const deleteReview = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // For demo, we'll use a hardcoded user ID if not provided by auth middleware
-    const DEMO_USER_ID = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011")
-    const userId = req.body.userId || DEMO_USER_ID // Use provided userId or demo ID
-
-    const review = await Review.findById(req.params.id)
-
-    if (!review) {
-      return next(new ErrorResponse("Review not found", 404))
-    }
-
-    // In a real app, ensure req.user.id matches review.userId
-    if (review.userId.toString() !== userId.toString()) {
-      return next(new ErrorResponse("Not authorized to delete this review", 403))
-    }
-
-    await review.deleteOne()
-    res.status(200).json({ message: "Review removed" })
-  } catch (error) {
-    next(error)
+  // Basic authorization check (in a real app, this would be more robust)
+  if (reviews[reviewIndex].userId !== userId) {
+    return res.status(403).json({ message: "Unauthorized to update this review" })
   }
-}
 
-// @desc    Get review statistics for a product
-// @route   GET /api/reviews/stats/:productId
-// @access  Public
-export const getReviewStatsForProduct = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { productId } = req.params
-
-    const stats = await Review.aggregate([
-      { $match: { productId } },
-      {
-        $group: {
-          _id: null,
-          averageRating: { $avg: "$rating" },
-          totalReviews: { $sum: 1 },
-          ratingBreakdown: {
-            $push: {
-              rating: "$rating",
-            },
-          },
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          averageRating: { $round: ["$averageRating", 1] }, // Round to 1 decimal place
-          totalReviews: 1,
-          ratingBreakdown: {
-            $arrayToObject: {
-              $map: {
-                input: [5, 4, 3, 2, 1],
-                as: "r",
-                in: {
-                  k: { $toString: "$$r" },
-                  v: {
-                    $size: {
-                      $filter: {
-                        input: "$ratingBreakdown",
-                        as: "item",
-                        cond: { $eq: ["$$item.rating", "$$r"] },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    ])
-
-    if (stats.length === 0) {
-      return res.json({
-        averageRating: 0,
-        totalReviews: 0,
-        ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
-      })
+  if (rating !== undefined) {
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ message: "Rating must be between 1 and 5." })
     }
-
-    res.json(stats[0])
-  } catch (error) {
-    console.error("Get review stats error:", error)
-    next(error)
+    reviews[reviewIndex].rating = rating
   }
-}
+  if (comment !== undefined) {
+    reviews[reviewIndex].comment = comment
+  }
+  reviews[reviewIndex].date = new Date().toISOString() // Update date on modification
+
+  return res.status(200).json(reviews[reviewIndex])
+})
+
+/**
+ * Deletes a review.
+ * DELETE /api/reviews/:id
+ */
+export const deleteReview = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { userId } = req.body // Expect userId in body for authorization
+
+  const reviewIndex = reviews.findIndex((r) => r.id === id)
+  if (reviewIndex === -1) {
+    return res.status(404).json({ message: "Review not found" })
+  }
+
+  // Basic authorization check
+  if (reviews[reviewIndex].userId !== userId) {
+    return res.status(403).json({ message: "Unauthorized to delete this review" })
+  }
+
+  reviews.splice(reviewIndex, 1)
+  return res.status(204).send() // No content on successful deletion
+})
+
+/**
+ * Fetches review statistics for a product.
+ * GET /api/reviews/stats/:productId
+ */
+export const getReviewStatsForProduct = asyncHandler(async (req: Request, res: Response) => {
+  const { productId } = req.params
+  const stats = calculateReviewStats(productId)
+  return res.status(200).json(stats)
+})

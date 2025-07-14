@@ -5,9 +5,9 @@ export interface IReview extends Document {
   productId: string
   userId: mongoose.Types.ObjectId
   orderId: mongoose.Types.ObjectId
-  reviewerName: string // Storing for display convenience
-  productName: string // Storing for display convenience
-  productImage: string // Storing for display convenience
+  reviewerName: string 
+  productName: string 
+  productImage: string 
   rating: number
   comment: string
   verified: boolean
