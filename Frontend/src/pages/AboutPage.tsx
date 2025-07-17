@@ -2,8 +2,11 @@
 
 import { useState, useEffect, useRef } from "react"
 import { MapPin, Mail, Phone, Star, Users, Award, Heart, Music, Sparkles, ChevronDown, Play, Pause } from "lucide-react"
+import SEOHelmet from "../components/seo/SEOHelmet"
+import { useSEOData } from "../hooks/usesSEOData"
 
 const AboutPage = () => {
+  const { seoData } = useSEOData("/about")
   const [isPlaying, setIsPlaying] = useState(false)
   const [scrollY, setScrollY] = useState(0)
   const [, setActiveSection] = useState(0)
@@ -86,8 +89,29 @@ const AboutPage = () => {
     { year: "2024", title: "Global Recognition", description: "Featured in international wellness magazines" },
   ]
 
+  // Default SEO while loading
+  const defaultSEO = {
+    title: "About OMSound Nepal - Our Story & Mission",
+    description:
+      "Learn about OMSound Nepal's journey in preserving ancient Himalayan singing bowl traditions while bringing authentic healing instruments to the modern world.",
+    keywords: ["about omsound", "nepal artisans", "singing bowl history", "himalayan craftsmanship"],
+    ogImage: "/images/about-hero.jpg",
+  }
+
+  const currentSEO = seoData || defaultSEO
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-blue-50 overflow-hidden">
+      <SEOHelmet
+        title={currentSEO.title}
+        description={currentSEO.description}
+        keywords={currentSEO.keywords}
+        image={currentSEO.ogImage}
+        type="website"
+        structuredData={seoData?.structuredData}
+        url="https://omsoundnepal.com/about"
+      />
+
       {/* Floating Elements */}
       <div className="fixed inset-0 pointer-events-none z-10">
         {[...Array(6)].map((_, i) => (
@@ -327,7 +351,9 @@ const AboutPage = () => {
                 to preserve ancient healing traditions while bringing their transformative power to the modern world.
               </p>
               <p className="text-lg text-gray-700 leading-relaxed">
-                Our journey began in 2008 when second-generation Nepali bowl maker Ruchika Baidya decided to share her family's age-old singing bowl-making secrets with the world. What started as a small workshop has grown into a global movement of healing and harmony.
+                Our journey began in 2008 when second-generation Nepali bowl maker Ruchika Baidya decided to share her
+                family's age-old singing bowl-making secrets with the world. What started as a small workshop has grown
+                into a global movement of healing and harmony.
               </p>
               <div className="flex flex-wrap gap-4 mt-8">
                 {["Authentic", "Handcrafted", "Therapeutic", "Sustainable"].map((tag, index) => (
