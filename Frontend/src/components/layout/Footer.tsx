@@ -134,6 +134,15 @@ const Footer = () => {
                   Shipping Policy
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/privacy-policy"
+                  className="text-gray-400 hover:text-gold-400 flex items-center transition-colors"
+                >
+                  <ChevronRight className="h-4 w-4 mr-2 text-gold-500" />
+                  Privacy Policy
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { MapPin, Mail, Phone, Star, Users, Award, Heart, Music, Sparkles, ChevronDown, Play, Pause } from "lucide-react"
 import SEOHelmet from "../components/seo/SEOHelmet"
-import { useSEOData } from "../hooks/usesSEOData"
+import { useSEOData } from "../hooks/useSEOData"
 
 const AboutPage = () => {
   const { seoData } = useSEOData("/about")

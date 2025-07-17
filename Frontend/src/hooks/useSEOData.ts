@@ -91,6 +91,63 @@ const getDefaultSEO = (path: string): SEOData => {
       ogImage: "/images/sound-healing.jpg",
       isActive: true,
     },
+    "/faq": {
+      title: "FAQ - Frequently Asked Questions | OMSound Nepal",
+      description: "Find answers to common questions about Himalayan singing bowls, sound healing, orders, and more.",
+      keywords: ["FAQ", "singing bowls questions", "sound healing FAQ", "OMSound Nepal support"],
+      ogImage: "/images/faq-hero.jpg",
+      isActive: true,
+    },
+    "/care-guide": {
+      title: "Sound Bowl Care Guide - Maintain Your Himalayan Singing Bowl | OMSound Nepal",
+      description:
+        "Learn how to properly clean, store, and care for your Himalayan singing bowls to preserve their sound and longevity.",
+      keywords: ["singing bowl care", "clean singing bowl", "store singing bowl", "himalayan bowl maintenance"],
+      ogImage: "/images/care-guide-hero.jpg",
+      isActive: true,
+    },
+    "/privacy-policy": {
+      title: "Privacy Policy | OMSound Nepal",
+      description: "Understand how OMSound Nepal collects, uses, and protects your personal information.",
+      keywords: ["privacy policy", "data protection", "OMSound Nepal privacy", "user data"],
+      ogImage: "/images/privacy-hero.jpg",
+      isActive: true,
+    },
+    "/blog": {
+      title: "Blog - Insights & Wisdom | OMSound Nepal",
+      description: "Explore articles on sound healing, meditation, Himalayan culture, and the art of singing bowls.",
+      keywords: ["sound healing blog", "meditation articles", "singing bowls insights", "himalayan culture"],
+      ogImage: "/images/blog-hero.jpg",
+      isActive: true,
+    },
+    "/careers": {
+      title: "Careers - Join Our Team | OMSound Nepal",
+      description: "Explore career opportunities at OMSound Nepal and become part of our mission to spread healing.",
+      keywords: ["careers", "jobs", "hiring", "OMSound Nepal jobs", "sound healing careers"],
+      ogImage: "/images/careers-hero.jpg",
+      isActive: true,
+    },
+    "/press-media": {
+      title: "Press & Media - OMSound Nepal",
+      description: "Access press releases, media mentions, and brand assets for OMSound Nepal.",
+      keywords: ["press", "media", "press kit", "OMSound Nepal news", "media contact"],
+      ogImage: "/images/press-hero.jpg",
+      isActive: true,
+    },
+    "/shipping-policy": {
+      title: "Shipping Policy - OMSound Nepal",
+      description: "Learn about our shipping methods, delivery times, and international shipping details.",
+      keywords: ["shipping policy", "delivery", "international shipping", "order tracking"],
+      ogImage: "/images/shipping-hero.jpg",
+      isActive: true,
+    },
+    "/support-center": {
+      title: "Support Center - How Can We Help? | OMSound Nepal",
+      description: "Find answers to your questions and get support for your OMSound Nepal products and services.",
+      keywords: ["support", "help center", "customer service", "troubleshooting"],
+      ogImage: "/images/support-hero.jpg",
+      isActive: true,
+    },
   }
 
   return (

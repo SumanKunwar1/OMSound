@@ -1,7 +1,7 @@
 "use client"
 
 import SEOHelmet from "../components/seo/SEOHelmet"
-import { useSEOData } from "../hooks/usesSEOData"
+import { useSEOData } from "../hooks/useSEOData"
 import HeroSection from "../components/home/HeroSection"
 import StorySection from "../components/home/StorySection"
 import HealingSection from "../components/home/HealingSection"
