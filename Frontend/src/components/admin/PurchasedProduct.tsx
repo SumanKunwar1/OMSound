@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Package, Star, Download, Play, Pause } from "lucide-react"
+import { Package, Download, Play, Pause } from "lucide-react"
 import { useAuth } from "../../context/AuthContext"
 import { canShowPurchasedProducts } from "../../utils/order-helper"
 import type { Order } from "../../types/order" // Import Order from the new central file
@@ -60,10 +60,7 @@ export function PurchasedProducts({ orders }: PurchasedProductsProps) {
     alert(`Downloading guide for ${productName}...`)
   }
 
-  const handleRateProduct = (productId: string, rating: number) => {
-    // In a real app, you would save this rating
-    alert(`Rated ${rating} stars for product ${productId}`)
-  }
+  // Removed handleRateProduct and the associated UI as review functionality is centralized in DashboardPage
 
   if (purchasedProducts.length === 0) {
     return (
@@ -143,22 +140,6 @@ export function PurchasedProducts({ orders }: PurchasedProductsProps) {
                   <Download size={16} />
                   Guide
                 </button>
-              </div>
-
-              <div className="pt-3 border-t border-gray-100">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">Rate this product:</span>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        size={14}
-                        className="text-gray-300 hover:text-gold cursor-pointer transition-colors"
-                        onClick={() => handleRateProduct(product.productId, star)}
-                      />
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
           </div>

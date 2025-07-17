@@ -6,13 +6,7 @@ import { seoData } from "../data/seoData"
 import { useAuth } from "../context/AuthContext"
 import { useCart } from "../context/CartContext"
 import { orderService } from "../services/orderServices"
-import {
-  getUserReviews,
-  getUserReviewForProduct,
-  addUserReview,
-  updateUserReview,
-  deleteUserReview,
-} from "../data/userReviews"
+import { reviewService, type Review } from "../services/review.service" // Import reviewService and Review type
 import { PurchasedProducts } from "../components/admin/PurchasedProduct"
 import {
   User,
@@ -71,13 +65,14 @@ const DashboardPage = () => {
   const [orders, setOrders] = useState<Order[]>([])
   const [ordersLoading, setOrdersLoading] = useState(true)
   const [ordersError, setOrdersError] = useState<string | null>(null)
+  const [userReviews, setUserReviews] = useState<Review[]>([]) // State for user reviews
   const [reviewModal, setReviewModal] = useState<{
     isOpen: boolean
     productId?: string
     orderId?: string
     productName?: string
     productImage?: string
-    existingReview?: any
+    existingReview?: Review // Use the imported Review type
   }>({ isOpen: false })
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" })
   const seo = seoData.dashboard
@@ -151,8 +146,21 @@ const DashboardPage = () => {
       }
     }
 
-    // Re-fetch orders whenever the user object changes (e.g., after login/logout)
+    // Fetch user reviews
+    const fetchUserReviews = async () => {
+      if (user?._id) {
+        try {
+          const reviewsData = await reviewService.getReviewsByUserId(user._id)
+          setUserReviews(reviewsData)
+        } catch (error) {
+          console.error("Error fetching user reviews:", error)
+        }
+      }
+    }
+
+    // Re-fetch orders and reviews whenever the user object changes (e.g., after login/logout)
     fetchOrders()
+    fetchUserReviews()
   }, [user]) // Dependency array now correctly includes `user`
 
   useEffect(() => {
@@ -182,11 +190,6 @@ const DashboardPage = () => {
       </div>
     )
   }
-
-  // Get user reviews
-  const userReviews = getUserReviews(user._id)
-
-  // Calculate purchased products count - using helper function
 
   const handleCancelOrder = async (orderId: string) => {
     if (confirm("Are you sure you want to cancel this order?")) {
@@ -229,7 +232,7 @@ const DashboardPage = () => {
   }
 
   const openReviewModal = (productId: string, orderId: string, productName: string, productImage: string) => {
-    const existingReview = getUserReviewForProduct(user._id, productId, orderId)
+    const existingReview = reviewService.getReviewForProductAndOrder(userReviews, productId, orderId)
     setReviewModal({
       isOpen: true,
       productId,
@@ -249,31 +252,53 @@ const DashboardPage = () => {
     }
   }
 
-  const handleReviewSubmit = () => {
-    if (!reviewModal.productId || !reviewModal.orderId) return
+  const handleReviewSubmit = async () => {
+    if (!reviewModal.productId || !reviewModal.orderId || !user?._id) return
 
-    if (reviewModal.existingReview) {
-      updateUserReview(reviewModal.existingReview.id, reviewForm)
-    } else {
-      addUserReview({
-        userId: user._id,
-        productId: reviewModal.productId,
-        orderId: reviewModal.orderId,
-        productName: reviewModal.productName || "",
-        productImage: reviewModal.productImage || "",
-        rating: reviewForm.rating,
-        comment: reviewForm.comment,
-      })
+    try {
+      if (reviewModal.existingReview) {
+        await reviewService.updateReview(reviewModal.existingReview._id, {
+          rating: reviewForm.rating,
+          comment: reviewForm.comment,
+          userId: user._id,
+        })
+      } else {
+        await reviewService.createReview({
+          userId: user._id,
+          productId: reviewModal.productId,
+          orderId: reviewModal.orderId,
+          productName: reviewModal.productName || "",
+          productImage: reviewModal.productImage || "",
+          rating: reviewForm.rating,
+          comment: reviewForm.comment,
+          reviewerName: `${user.firstName} ${user.lastName}`, // Pass reviewer name from user context
+        })
+      }
+      // Re-fetch reviews after submission to update the UI
+      const updatedReviews = await reviewService.getReviewsByUserId(user._id)
+      setUserReviews(updatedReviews)
+
+      setReviewModal({ isOpen: false })
+      alert("Review saved successfully")
+    } catch (error) {
+      console.error("Error saving review:", error)
+      alert("Failed to save review. Please try again.")
     }
-
-    setReviewModal({ isOpen: false })
-    alert("Review saved successfully")
   }
 
-  const handleDeleteReview = (reviewId: string) => {
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!user?._id) return
     if (confirm("Are you sure you want to delete this review?")) {
-      deleteUserReview(reviewId)
-      alert("Review deleted successfully")
+      try {
+        await reviewService.deleteReview(reviewId, user._id)
+        // Re-fetch reviews after deletion to update the UI
+        const updatedReviews = await reviewService.getReviewsByUserId(user._id)
+        setUserReviews(updatedReviews)
+        alert("Review deleted successfully")
+      } catch (error) {
+        console.error("Error deleting review:", error)
+        alert("Failed to delete review. Please try again.")
+      }
     }
   }
 
@@ -725,7 +750,7 @@ const DashboardPage = () => {
                                       }
                                       className="px-3 py-1 bg-gold/20 text-gold rounded hover:bg-gold/30 text-sm"
                                     >
-                                      {getUserReviewForProduct(user._id, item.productId, order.id)
+                                      {reviewService.getReviewForProductAndOrder(userReviews, item.productId, order.id)
                                         ? "Edit Review"
                                         : "Write Review"}
                                     </button>
@@ -771,7 +796,7 @@ const DashboardPage = () => {
                   <div className="space-y-6">
                     {userReviews.map((review) => (
                       <div
-                        key={review.id}
+                        key={review._id} // Use _id from Mongoose
                         className="border border-gray-200 rounded-lg p-6 hover:border-gold/30 transition-colors"
                       >
                         <div className="flex items-start gap-4">
@@ -785,7 +810,7 @@ const DashboardPage = () => {
                             <div className="flex items-center gap-2 mb-3">
                               <div className="flex">{renderStars(review.rating)}</div>
                               <span className="text-charcoal/70 text-sm">
-                                {new Date(review.date).toLocaleDateString()}
+                                {new Date(review.createdAt).toLocaleDateString()}
                               </span>
                             </div>
                             <p className="text-charcoal/80 leading-relaxed">{review.comment}</p>
@@ -805,7 +830,7 @@ const DashboardPage = () => {
                               <Edit size={18} />
                             </button>
                             <button
-                              onClick={() => handleDeleteReview(review.id)}
+                              onClick={() => handleDeleteReview(review._id)} // Use _id for deletion
                               className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                             >
                               <Trash2 size={18} />

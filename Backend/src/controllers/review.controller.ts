@@ -1,44 +1,17 @@
-// controllers/review.controller.ts
 import type { Request, Response } from "express"
-import { v4 as uuidv4 } from "uuid"
-import type { Review, ReviewStats, CreateReviewData, UpdateReviewData } from "../types/review"
+import Review, { type IReview } from "../models/review.model" // Import the Mongoose Review model
 import { asyncHandler } from "../utils/asyncHandler.utils"
-
-// --- Mock Database (In a real app, this would be a database like MongoDB, PostgreSQL, etc.) ---
-const reviews: Review[] = []
-
-// Helper to calculate review stats
-const calculateReviewStats = (productId: string): ReviewStats => {
-  const productReviews = reviews.filter((r) => r.productId === productId)
-  const totalReviews = productReviews.length
-  let sumRatings = 0
-  // FIX: Changed "4": "0" to "4": 0 to match the number type in ReviewStats
-  const ratingBreakdown: ReviewStats["ratingBreakdown"] = { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 }
-
-  productReviews.forEach((review) => {
-    sumRatings += review.rating
-    ratingBreakdown[review.rating.toString() as keyof ReviewStats["ratingBreakdown"]]++
-  })
-
-  const averageRating = totalReviews > 0 ? sumRatings / totalReviews : 0
-
-  return {
-    averageRating: Number.parseFloat(averageRating.toFixed(1)),
-    totalReviews,
-    ratingBreakdown,
-  }
-}
 
 // --- Controller Functions ---
 
 /**
- * Creates a new product review.
+ * Creates a new product review or updates an existing one.
  * POST /api/reviews
  */
 export const createReview = asyncHandler(async (req: Request, res: Response) => {
-  const { productId, orderId, rating, comment, productName, productImage, userId } = req.body as CreateReviewData
+  const { productId, orderId, rating, comment, productName, productImage, userId, reviewerName } = req.body
 
-  if (!productId || !orderId || !rating || !comment || !productName || !userId) {
+  if (!productId || !orderId || !rating || !comment || !productName || !userId || !reviewerName) {
     return res.status(400).json({ message: "Missing required review fields." })
   }
 
@@ -47,36 +20,31 @@ export const createReview = asyncHandler(async (req: Request, res: Response) => 
   }
 
   // Check if a review already exists for this product and order by this user
-  const existingReviewIndex = reviews.findIndex(
-    (r) => r.productId === productId && r.orderId === orderId && r.userId === userId,
-  )
+  const review = await Review.findOne({ productId, userId, orderId })
 
-  if (existingReviewIndex !== -1) {
+  if (review) {
     // If exists, update it
-    reviews[existingReviewIndex] = {
-      ...reviews[existingReviewIndex],
-      rating,
-      comment,
-      date: new Date().toISOString(),
-      verified: true, // Assuming reviews from delivered orders are verified
-    }
-    return res.status(200).json(reviews[existingReviewIndex])
+    review.rating = rating
+    review.comment = comment
+    review.productName = productName // Update if product name changes
+    review.productImage = productImage // Update if product image changes
+    review.reviewerName = reviewerName // Update if reviewer name changes
+    review.verified = true // Assuming reviews from delivered orders are verified
+    await review.save()
+    return res.status(200).json(review)
   } else {
     // Otherwise, create new
-    const newReview: Review = {
-      id: uuidv4(),
+    const newReview: IReview = await Review.create({
       productId,
       userId,
       orderId,
-      reviewerName: "User " + userId.substring(0, 4), // Mock reviewer name
+      reviewerName,
       productName,
       productImage: productImage || "/placeholder.svg",
       rating,
       comment,
-      date: new Date().toISOString(),
       verified: true, // Assuming reviews from delivered orders are verified
-    }
-    reviews.push(newReview)
+    })
     return res.status(201).json(newReview)
   }
 })
@@ -87,7 +55,7 @@ export const createReview = asyncHandler(async (req: Request, res: Response) => 
  */
 export const getReviewsByProductId = asyncHandler(async (req: Request, res: Response) => {
   const { productId } = req.params
-  const productReviews = reviews.filter((review) => review.productId === productId)
+  const productReviews = await Review.find({ productId }).populate("userId", "firstName lastName")
   return res.status(200).json(productReviews)
 })
 
@@ -97,7 +65,7 @@ export const getReviewsByProductId = asyncHandler(async (req: Request, res: Resp
  */
 export const getReviewsByUserId = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params
-  const userReviews = reviews.filter((review) => review.userId === userId)
+  const userReviews = await Review.find({ userId }).populate("userId", "firstName lastName")
   return res.status(200).json(userReviews)
 })
 
@@ -107,7 +75,7 @@ export const getReviewsByUserId = asyncHandler(async (req: Request, res: Respons
  */
 export const getReviewById = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params
-  const review = reviews.find((r) => r.id === id)
+  const review = await Review.findById(id).populate("userId", "firstName lastName")
   if (!review) {
     return res.status(404).json({ message: "Review not found" })
   }
@@ -120,15 +88,15 @@ export const getReviewById = asyncHandler(async (req: Request, res: Response) =>
  */
 export const updateReview = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params
-  const { rating, comment, userId } = req.body as UpdateReviewData
+  const { rating, comment, userId } = req.body // userId is for authorization check
 
-  const reviewIndex = reviews.findIndex((r) => r.id === id)
-  if (reviewIndex === -1) {
+  const review = await Review.findById(id)
+  if (!review) {
     return res.status(404).json({ message: "Review not found" })
   }
 
-  // Basic authorization check (in a real app, this would be more robust)
-  if (reviews[reviewIndex].userId !== userId) {
+  // Basic authorization check: ensure the user updating the review is the owner
+  if (review.userId.toString() !== userId) {
     return res.status(403).json({ message: "Unauthorized to update this review" })
   }
 
@@ -136,14 +104,15 @@ export const updateReview = asyncHandler(async (req: Request, res: Response) => 
     if (rating < 1 || rating > 5) {
       return res.status(400).json({ message: "Rating must be between 1 and 5." })
     }
-    reviews[reviewIndex].rating = rating
+    review.rating = rating
   }
   if (comment !== undefined) {
-    reviews[reviewIndex].comment = comment
+    review.comment = comment
   }
-  reviews[reviewIndex].date = new Date().toISOString() // Update date on modification
+  review.updatedAt = new Date() // Update timestamp on modification
 
-  return res.status(200).json(reviews[reviewIndex])
+  await review.save()
+  return res.status(200).json(review)
 })
 
 /**
@@ -154,17 +123,17 @@ export const deleteReview = asyncHandler(async (req: Request, res: Response) => 
   const { id } = req.params
   const { userId } = req.body // Expect userId in body for authorization
 
-  const reviewIndex = reviews.findIndex((r) => r.id === id)
-  if (reviewIndex === -1) {
+  const review = await Review.findById(id)
+  if (!review) {
     return res.status(404).json({ message: "Review not found" })
   }
 
-  // Basic authorization check
-  if (reviews[reviewIndex].userId !== userId) {
+  // Basic authorization check: ensure the user deleting the review is the owner
+  if (review.userId.toString() !== userId) {
     return res.status(403).json({ message: "Unauthorized to delete this review" })
   }
 
-  reviews.splice(reviewIndex, 1)
+  await Review.findByIdAndDelete(id)
   return res.status(204).send() // No content on successful deletion
 })
 
@@ -174,6 +143,43 @@ export const deleteReview = asyncHandler(async (req: Request, res: Response) => 
  */
 export const getReviewStatsForProduct = asyncHandler(async (req: Request, res: Response) => {
   const { productId } = req.params
-  const stats = calculateReviewStats(productId)
-  return res.status(200).json(stats)
+
+  const stats = await Review.aggregate([
+    { $match: { productId: productId } },
+    {
+      $group: {
+        _id: null,
+        totalReviews: { $sum: 1 },
+        averageRating: { $avg: "$rating" },
+        rating1: { $sum: { $cond: [{ $eq: ["$rating", 1] }, 1, 0] } },
+        rating2: { $sum: { $cond: [{ $eq: ["$rating", 2] }, 1, 0] } },
+        rating3: { $sum: { $cond: [{ $eq: ["$rating", 3] }, 1, 0] } },
+        rating4: { $sum: { $cond: [{ $eq: ["$rating", 4] }, 1, 0] } },
+        rating5: { $sum: { $cond: [{ $eq: ["$rating", 5] }, 1, 0] } },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        totalReviews: 1,
+        averageRating: { $round: ["$averageRating", 1] },
+        ratingBreakdown: {
+          "1": "$rating1",
+          "2": "$rating2",
+          "3": "$rating3",
+          "4": "$rating4",
+          "5": "$rating5",
+        },
+      },
+    },
+  ])
+
+  // Return default stats if no reviews found
+  return res.status(200).json(
+    stats[0] || {
+      averageRating: 0,
+      totalReviews: 0,
+      ratingBreakdown: { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 },
+    },
+  )
 })
