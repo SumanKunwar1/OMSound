@@ -481,7 +481,7 @@ const ContactPage = () => {
                     <p className="text-ivory/80">Central Nepal Region</p>
                   </div>
                   <a
-                    href="https://www.google.com/maps"
+                    href="https://www.google.com/maps?rlz=1C1GCEA_enNP1145NP1145&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRiPAtIBCDg1NTNqMGo3qAIIsAIB8QWMIE0itDC15Q&um=1&ie=UTF-8&fb=1&gl=np&sa=X&geocode=Kd1zZsbQGes5MU3zIvfkfTUo&daddr=Near+salesberry,+Kathmandu+44600"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-8 py-4 rounded-xl hover:from-cyan-500 hover:to-blue-500 transition-all duration-300 transform hover:scale-105 shadow-lg"

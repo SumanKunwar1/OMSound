@@ -18,10 +18,10 @@ const HomePage = () => {
     return (
       <div>
         <SEOHelmet
-          title="OMSound Nepal - Authentic Himalayan Singing Bowls"
-          description="Discover authentic handcrafted Himalayan singing bowls for meditation, sound healing, and spiritual wellness."
-          keywords="singing bowls, himalayan bowls, meditation, sound healing, nepal"
-          url="https://omsoundnepal.com"
+          title="Trinity Waterproofing - Expert Waterproofing Solutions"
+          description="Trinity Waterproofing offers top-notch waterproofing services and products to protect your property from water damage. Explore our solutions today!"
+          keywords="waterproofing, property protection, water damage, waterproofing services, waterproofing products"
+          url="https://trinitywaterproofing.com.np"
         />
         <HeroSection />
         <StorySection />
@@ -34,7 +34,7 @@ const HomePage = () => {
         {/* Free Shipping Banner */}
         <div className="bg-gold py-3">
           <div className="container-custom">
-            <p className="text-center text-charcoal font-medium">Free worldwide shipping on all orders over $100</p>
+            <p className="text-center text-charcoal font-medium">Free shipping on all orders over NPR 10,000</p>
           </div>
         </div>
       </div>
