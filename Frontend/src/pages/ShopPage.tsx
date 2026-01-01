@@ -58,10 +58,10 @@ const ShopPage = () => {
 
   // Default SEO while loading
   const defaultSEO = {
-    title: "Shop Authentic Singing Bowls - OMSound Nepal",
+    title: "waterproofing products - Trinity Waterproofing",
     description:
-      "Browse our collection of handcrafted Himalayan singing bowls. Each bowl is unique in tone, size, and design. Free worldwide shipping on orders over $100.",
-    keywords: ["buy singing bowls", "shop tibetan bowls", "meditation bowls", "sound therapy instruments"],
+      "Explore our range of high-quality waterproofing products designed to protect your property from water damage. Shop now for durable solutions!",
+    keywords: ["waterproofing", "property protection", "water damage", "waterproofing services", "waterproofing products"],
     ogImage: "/images/shop-collection.jpg",
   }
 
@@ -312,10 +312,10 @@ const ShopPage = () => {
         <AnimatedSection>
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-6xl font-serif text-gold mb-4 bg-gradient-to-r from-gold to-yellow-400 bg-clip-text text-transparent">
-              Shop Singing Bowls
+              Shop Waterproofing Products
             </h1>
             <p className="text-ivory/80 max-w-2xl mx-auto text-lg leading-relaxed">
-              Browse our collection of handcrafted Himalayan singing bowls, each unique in tone, size, and design
+              Discover our premium selection of waterproofing products designed to safeguard your property against water damage. Browse through our collection and find the perfect solution for your needs.
             </p>
           </div>
         </AnimatedSection>
@@ -655,7 +655,7 @@ const ShopPage = () => {
         >
           <div className="flex items-center justify-center gap-3 text-charcoal font-medium text-lg">
             <span className="text-2xl">✨</span>
-            <span>Free worldwide shipping on all orders over $100</span>
+            <span>Free shipping on all orders over NPR 10,000</span>
             <span className="text-2xl">✨</span>
           </div>
         </motion.div>

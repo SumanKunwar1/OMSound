@@ -44,7 +44,7 @@ twitterCard = "summary_large_image",
 twitterSite,
 twitterCreator,
 }) => {
-const baseUrl = "https://omsounds.com"
+const baseUrl = "https://trinitywaterproofing.com.np"
 const fullUrl = url ? `${baseUrl}${url}` : baseUrl
 const fullImageUrl = image ? (image.startsWith("http") ? image : `${baseUrl}${image}`) : ""
 
