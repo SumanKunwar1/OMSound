@@ -40,26 +40,24 @@ const CraftSection = () => {
 
   const craftSteps = [
     {
-      title: "Traditional Methods",
+      title: "Advanced Formulation",
       description:
-        "Our artisans use techniques passed down through generations, working with tools and methods that have remained unchanged for centuries.",
-      image: "https://res.cloudinary.com/dei0ymk1p/image/upload/v1752235490/Our_Story_umefkv.jpg",
+        "Our waterproofing solutions are developed using cutting-edge chemistry and advanced testing methods to ensure maximum protection against water penetration.",
+      image: "https://images.pexels.com/photos/3938022/pexels-photo-3938022.jpeg",
       step: "01",
     },
     {
-      title: "Hand-Hammered Bronze",
+      title: "Quality Testing",
       description:
-        "Expertly shaped from pure bronze, each bowl offers deep, resonant sound and lasting quality through traditional Nepalese craftsmanship.",
-      image:
-        "https://res.cloudinary.com/dei0ymk1p/image/upload/v1752239930/nepalese-artisan-crafting-a-singing-bowl_6vfMS-WMQiuKj-yd7nC2ug_x40bXkH1Q5SBHIjQhXUSMg_gqsfh3.jpg",
+        "Every batch of waterproofing product undergoes rigorous testing protocols including durability tests, adhesion tests, and environmental stress testing.",
+      image: "https://images.pexels.com/photos/3865857/pexels-photo-3865857.jpeg",
       step: "02",
     },
     {
-      title: "Expert Tuning",
+      title: "Expert Application",
       description:
-        "Through the meticulous process of hand-hammering, each bowl is carefully tuned to produce specific frequencies known for their therapeutic properties.",
-      image:
-        "https://res.cloudinary.com/dei0ymk1p/image/upload/v1752240011/skilled-nepalese-artisan-tuning-a-hand-h_fgW1_McySeOBMLeNbDL4Rg_yd9jMoGhTHammUiNZpQ0VQ_ldiaba.jpg",
+        "Our certified technicians apply products using proven installation methods to deliver optimal performance and long-lasting protection for your property.",
+      image: "https://images.pexels.com/photos/3940326/pexels-photo-3940326.jpeg",
       step: "03",
     },
   ]
@@ -87,7 +85,7 @@ const CraftSection = () => {
               variants={itemVariants}
               className="text-5xl md:text-5xl font-serif text-charcoal mb-6 leading-tight"
             >
-              Why Nepalese Craft Matters
+              Trinity Quality Process
             </motion.h2>
 
             <motion.div variants={itemVariants} className="w-24 h-1 bg-gold mx-auto mb-8"></motion.div>
@@ -96,7 +94,7 @@ const CraftSection = () => {
               variants={itemVariants}
               className="text-xl md:text-2xl text-charcoal/70 max-w-3xl mx-auto font-light leading-relaxed"
             >
-              A centuries-old tradition of metalwork excellence
+              Superior protection through rigorous testing and expert application
             </motion.p>
           </div>
 
@@ -169,7 +167,7 @@ const CraftSection = () => {
             ))}
           </motion.div>
 
-          {/* Artisan Support Section */}
+          {/* Expertise Section */}
           <motion.div
             variants={itemVariants}
             className="relative bg-gradient-to-br from-charcoal/5 via-navy/5 to-gold/5 backdrop-blur-sm border border-gold/20 rounded-3xl p-12 shadow-2xl overflow-hidden"
@@ -189,35 +187,32 @@ const CraftSection = () => {
                   variants={itemVariants}
                   className="text-4xl md:text-5xl font-serif text-charcoal mb-8 leading-tight"
                 >
-                  Supporting Artisan Livelihoods
+                  Industry-Leading Expertise
                 </motion.h3>
 
                 <div className="space-y-6 text-lg leading-relaxed">
                   <motion.p variants={itemVariants} className="text-charcoal/80">
-                    Every purchase directly supports Nepalese artisan families, ensuring this craft tradition continues
-                    to thrive. We maintain fair trade practices and invest in training the next generation of
-                    craftspeople.
+                    Trinity Waterproofing brings decades of experience in protective coatings and waterproofing solutions. Our team of certified professionals stays at the forefront of industry innovations and best practices.
                   </motion.p>
 
                   <motion.p variants={itemVariants} className="text-charcoal/80">
-                    Our workshop in the Kathmandu Valley employs over 25 skilled artisans, many of whom come from
-                    families with centuries of metalwork tradition.
+                    With a portfolio of thousands of successfully protected properties across commercial and residential sectors, we deliver solutions backed by real-world performance and proven reliability.
                   </motion.p>
                 </div>
 
                 {/* Stats */}
                 <motion.div variants={itemVariants} className="grid grid-cols-3 gap-6 my-10">
                   <div className="text-center">
-                    <div className="text-3xl font-serif font-bold text-gold mb-2">25+</div>
-                    <p className="text-charcoal/70 text-sm">Skilled Artisans</p>
+                    <div className="text-3xl font-serif font-bold text-gold mb-2">500+</div>
+                    <p className="text-charcoal/70 text-sm">Projects Completed</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-serif font-bold text-gold mb-2">20+</div>
+                    <p className="text-charcoal/70 text-sm">Years Experience</p>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-serif font-bold text-gold mb-2">100%</div>
-                    <p className="text-charcoal/70 text-sm">Fair Trade</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-serif font-bold text-gold mb-2">30+</div>
-                    <p className="text-charcoal/70 text-sm">Years Experience</p>
+                    <p className="text-charcoal/70 text-sm">Client Satisfaction</p>
                   </div>
                 </motion.div>
 
@@ -229,7 +224,7 @@ const CraftSection = () => {
                   className="inline-block"
                 >
                   <button className="bg-gradient-to-r from-gold to-gold/80 hover:from-gold/90 hover:to-gold text-charcoal px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    Learn More About Our Artisans
+                    Schedule Consultation
                   </button>
                 </motion.div>
               </div>
@@ -238,14 +233,14 @@ const CraftSection = () => {
               <motion.div variants={itemVariants} whileHover={{ scale: 1.02 }} className="lg:w-2/5 relative group">
                 <div className="relative overflow-hidden rounded-3xl shadow-2xl">
                   <img
-                    src="https://images.pexels.com/photos/10377406/pexels-photo-10377406.jpeg"
-                    alt="Nepalese artisan"
+                    src="https://images.pexels.com/photos/3912954/pexels-photo-3912954.jpeg"
+                    alt="Professional installation"
                     className="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-500"
                   />
 
                   {/* Badge */}
                   <div className="absolute bottom-6 left-6 bg-gold/95 backdrop-blur-sm text-charcoal py-3 px-6 rounded-full font-semibold shadow-lg group-hover:bg-gold transition-colors duration-300">
-                    100% Made in Nepal
+                    ISO Certified
                   </div>
 
                   {/* Decorative Corner */}

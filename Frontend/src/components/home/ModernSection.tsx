@@ -1,6 +1,7 @@
-import  { useRef } from 'react';
+"use client"
+
+import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Link } from 'react-router-dom';
 
 const ModernSection = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -29,36 +30,39 @@ const ModernSection = () => {
 
   const applications = [
     {
-      title: "Interior Decor",
-      description: "Add warmth and unique aesthetic appeal to modern interiors with our decorative singing bowls that complement any design style.",
-      image: "https://images.pexels.com/photos/3935347/pexels-photo-3935347.jpeg"
+      title: "Residential Properties",
+      description: "Protect your home with our comprehensive waterproofing solutions for roofs, basements, and foundations, ensuring peace of mind for years to come.",
+      image: "https://images.pexels.com/photos/3970673/pexels-photo-3970673.jpeg"
     },
     {
-      title: "Therapy Rooms",
-      description: "Create a therapeutic environment for clients with our professionally tuned bowls, designed for consistent tonal quality.",
-      image: "https://images.pexels.com/photos/4099354/pexels-photo-4099354.jpeg"
+      title: "Commercial Buildings",
+      description: "Safeguard commercial structures with industrial-grade coatings and membranes designed for high-traffic areas and demanding environments.",
+      image: "https://images.pexels.com/photos/3912952/pexels-photo-3912952.jpeg"
     },
     {
-      title: "Luxury Wellness Spas",
-      description: "Enhance premium treatments with the deep relaxation that our handcrafted singing bowls provide in spa environments.",
-      image: "https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg"
+      title: "Infrastructure Projects",
+      description: "Protect critical infrastructure with advanced waterproofing systems engineered for bridges, tunnels, dams, and underground structures.",
+      image: "https://images.pexels.com/photos/3945631/pexels-photo-3945631.jpeg"
     }
   ];
 
   return (
-    <section ref={sectionRef} className="section bg-ivory">
-      <div className="container-custom">
+    <section ref={sectionRef} className="min-h-screen bg-ivory">
+      <div className="relative z-10 px-6 md:px-12 py-20">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
+          className="max-w-7xl mx-auto"
         >
-          <motion.h2 variants={itemVariants} className="section-title text-charcoal">
-            Modern Meets Ancient
+          <motion.h2 variants={itemVariants} className="text-5xl md:text-7xl font-serif text-charcoal mb-6 leading-tight text-center">
+            Versatile Applications
           </motion.h2>
           
-          <motion.p variants={itemVariants} className="section-subtitle">
-            How traditional healing instruments enhance contemporary environments
+          <motion.div variants={itemVariants} className="w-24 h-1 bg-gold mx-auto mb-8"></motion.div>
+
+          <motion.p variants={itemVariants} className="text-xl md:text-2xl text-charcoal/70 max-w-3xl mx-auto text-center font-light leading-relaxed mb-16">
+            Trinity waterproofing solutions for every structure and environment
           </motion.p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
@@ -66,18 +70,20 @@ const ModernSection = () => {
               <motion.div 
                 key={index} 
                 variants={itemVariants}
-                className="card overflow-hidden group"
+                whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                className="group relative overflow-hidden rounded-3xl shadow-2xl cursor-pointer"
               >
                 <div className="relative h-60 overflow-hidden">
                   <img 
                     src={item.image} 
                     alt={item.title} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/40 to-transparent"></div>
                 </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-serif text-charcoal mb-3">{item.title}</h3>
-                  <p className="text-charcoal/80">{item.description}</p>
+                <div className="absolute inset-0 flex flex-col justify-end p-6">
+                  <h3 className="text-2xl font-serif text-ivory mb-2">{item.title}</h3>
+                  <p className="text-ivory/80 text-sm leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300">{item.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -85,31 +91,31 @@ const ModernSection = () => {
 
           <motion.div 
             variants={itemVariants} 
-            className="bg-navy text-ivory rounded-lg overflow-hidden"
+            className="bg-navy text-ivory rounded-3xl overflow-hidden shadow-2xl"
           >
             <div className="md:flex">
               <div className="md:w-2/5 relative">
                 <img 
-                  src="https://res.cloudinary.com/dei0ymk1p/image/upload/v1752235490/bringing-tranquility-to-contemporary-lif_NEhEtk6BS-6YDXRbwSnjqA_PUNVxB3aQEuUBGtdvd9pAw_drmgvh.jpg" 
-                  alt="Modern wellness" 
+                  src="https://images.pexels.com/photos/3962649/pexels-photo-3962649.jpeg" 
+                  alt="Waterproofing protection" 
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gold/20"></div>
               </div>
               <div className="md:w-3/5 p-8 md:p-12 flex flex-col justify-center">
                 <h3 className="text-2xl md:text-3xl font-serif text-gold mb-6">
-                  Bringing Tranquility to Contemporary Life
+                  Protection That Lasts
                 </h3>
                 <p className="text-ivory/80 mb-4">
-                  In our fast-paced digital world, the need for mindful moments and natural wellness solutions has never been greater. Our singing bowls serve as both beautiful decor pieces and functional tools for bringing calm into busy modern lives.
+                  Water damage is one of the most costly and preventable problems affecting properties. Trinity Waterproofing solutions create lasting barriers that protect your investment from the foundation up.
                 </p>
                 <p className="text-ivory/80 mb-8">
-                  From corporate offices seeking to create relaxation spaces for employees to luxury hotels enhancing guest experiences, OMSound Nepal bowls fit seamlessly into contemporary settings while providing an authentic connection to ancient wellness practices.
+                  Whether you're building new, renovating, or protecting existing structures, our products and services provide the expertise and reliability that come from over 20 years of industry leadership.
                 </p>
                 <div className="inline-block">
-                  <Link to="/shop" className="btn-primary">
-                    Explore the Collection
-                  </Link>
+                  <button className="bg-gradient-to-r from-gold to-gold/80 hover:from-gold/90 hover:to-gold text-charcoal px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    View Our Solutions
+                  </button>
                 </div>
               </div>
             </div>

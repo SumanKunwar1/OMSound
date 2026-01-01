@@ -3,13 +3,69 @@
 import { useRef, useState, useEffect } from "react"
 import { motion, useInView, AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronRight, Star, Quote } from "lucide-react"
-import { testimonials } from "../../data/testimonials-data"
 
 const TestimonialsSection = () => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+
+  const testimonials = [
+    {
+      id: 1,
+      name: "Rajesh Kumar",
+      profession: "Home Owner",
+      location: "Kathmandu",
+      image: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg",
+      rating: 5,
+      quote: "Trinity waterproofing saved our home from severe water damage. The quality is exceptional and the installation team was extremely professional."
+    },
+    {
+      id: 2,
+      name: "Priya Sharma",
+      profession: "Building Contractor",
+      location: "Pokhara",
+      image: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg",
+      rating: 5,
+      quote: "We've used Trinity products on multiple commercial projects. They're reliable, durable, and our clients always trust the quality."
+    },
+    {
+      id: 3,
+      name: "Amit Patel",
+      profession: "Real Estate Developer",
+      location: "Bhaktapur",
+      image: "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg",
+      rating: 5,
+      quote: "The membrane waterproofing system has been outstanding on our residential projects. Zero complaints from our residents."
+    },
+    {
+      id: 4,
+      name: "Deepa Thapa",
+      profession: "Property Manager",
+      location: "Lalitpur",
+      image: "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg",
+      rating: 5,
+      quote: "Trinity's epoxy coating transformed our basement. It looks professional and we haven't had a single leak since installation."
+    },
+    {
+      id: 5,
+      name: "Vikram Singh",
+      profession: "Commercial Architect",
+      location: "Kathmandu",
+      image: "https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg",
+      rating: 5,
+      quote: "For every commercial project, Trinity is our first choice. The products perform exactly as promised, every single time."
+    },
+    {
+      id: 6,
+      name: "Sunita Gupta",
+      profession: "Facility Manager",
+      location: "Pokhara",
+      image: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg",
+      rating: 5,
+      quote: "Outstanding customer service paired with superior products. Trinity made the entire process seamless from consultation to completion."
+    }
+  ]
 
   // Auto-play functionality
   useEffect(() => {
@@ -88,7 +144,7 @@ const TestimonialsSection = () => {
           {/* Header Section */}
           <div className="text-center mb-20">
             <motion.h2 variants={itemVariants} className="text-5xl md:text-7xl font-serif text-gold mb-6 leading-tight">
-              Testimonials & Use Cases
+              Client Success Stories
             </motion.h2>
 
             <motion.div variants={itemVariants} className="w-24 h-1 bg-gold mx-auto mb-8"></motion.div>
@@ -97,7 +153,7 @@ const TestimonialsSection = () => {
               variants={itemVariants}
               className="text-xl md:text-2xl text-ivory/80 max-w-3xl mx-auto font-light leading-relaxed"
             >
-              Hear from professionals who use our singing bowls in their practice
+              Real results from satisfied customers across Nepal
             </motion.p>
           </div>
 

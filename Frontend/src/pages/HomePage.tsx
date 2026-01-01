@@ -7,8 +7,8 @@ import StorySection from "../components/home/StorySection"
 import HealingSection from "../components/home/HealingSection"
 import FeaturedProducts from "../components/home/FeaturedProducts"
 import CraftSection from "../components/home/CraftSection"
-import TestimonialsSection from "../components/home/TestimonialsSection"
 import ModernSection from "../components/home/ModernSection"
+import FeaturedBrandsSection from "../components/home/FeaturedBrand"
 
 const HomePage = () => {
   const { seoData, loading } = useSEOData("/")
@@ -27,6 +27,7 @@ const HomePage = () => {
         <StorySection />
         <HealingSection />
         <FeaturedProducts />
+        <FeaturedBrandsSection />
         <CraftSection />
         <ModernSection />
 
@@ -56,8 +57,8 @@ const HomePage = () => {
       <StorySection />
       <HealingSection />
       <FeaturedProducts />
+      <FeaturedBrandsSection />
       <CraftSection />
-      <TestimonialsSection />
       <ModernSection />
 
       {/* Free Shipping Banner */}
