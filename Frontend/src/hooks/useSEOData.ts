@@ -60,90 +60,90 @@ export const useSEOData = (path: string) => {
 const getDefaultSEO = (path: string): SEOData => {
   const defaults: Record<string, SEOData> = {
     "/": {
-      title: "OMSound Nepal - Authentic Himalayan Singing Bowls",
+      title: "Trinity Waterproofing - Expert Waterproofing Solutions in Nepal",
       description:
-        "Discover authentic handcrafted Himalayan singing bowls for meditation, sound healing, and spiritual wellness. Premium quality bowls made by master artisans in Nepal.",
-      keywords: ["singing bowls", "himalayan bowls", "meditation", "sound healing", "nepal", "tibetan bowls"],
+        "Trinity Waterproofing offers premium waterproofing solutions for residential and commercial properties. Comprehensive protection against water damage with 20+ years of expertise.",
+      keywords: ["waterproofing", "Trinity Waterproofing", "Nepal", "bathroom waterproofing", "terrace waterproofing", "basement protection", "anti-termite treatment", "water damage prevention"],
       ogImage: "/images/hero-bowl.jpg",
       isActive: true,
     },
     "/about": {
-      title: "About OMSound Nepal - Our Story & Mission",
+      title: "About Trinity Waterproofing - Our Journey & Mission",
       description:
-        "Learn about OMSound Nepal's journey in preserving ancient Himalayan singing bowl traditions while bringing authentic healing instruments to the modern world.",
-      keywords: ["about omsound", "nepal artisans", "singing bowl history", "himalayan craftsmanship"],
+        "Learn about Trinity Waterproofing's mission to bring premium waterproofing solutions to the world. Discover our story, values, and commitment to quality craftsmanship.",
+      keywords: ["about trinity waterproofing", "our story", "mission", "values", "craftsmanship"],
       ogImage: "/images/about-hero.jpg",
       isActive: true,
     },
     "/shop": {
-      title: "Shop Authentic Singing Bowls - OMSound Nepal",
+      title: "Waterproofing Products - Trinity Waterproofing",
       description:
-        "Browse our collection of handcrafted Himalayan singing bowls. Each bowl is unique in tone, size, and design. Free worldwide shipping on orders over $100.",
-      keywords: ["buy singing bowls", "shop tibetan bowls", "meditation bowls", "sound therapy instruments"],
+        "Explore our range of high-quality waterproofing products designed to protect your property from water damage. Shop now for durable solutions!",
+      keywords: ["waterproofing products", "Trinity Waterproofing", "water damage protection", "durable waterproofing solutions"],
       ogImage: "/images/shop-collection.jpg",
       isActive: true,
     },
-    "/sound-healing": {
-      title: "Sound Healing Therapy - OMSound Nepal",
+    "/services": {
+      title: "Our Waterproofing Services - Trinity Waterproofing",
       description:
-        "Experience transformative sound healing sessions with authentic Himalayan singing bowls. Reduce stress, improve sleep, and find inner peace through therapeutic sound.",
-      keywords: ["sound healing", "sound therapy", "meditation sessions", "stress relief", "wellness"],
+        "Discover the comprehensive waterproofing services offered by Trinity Waterproofing. From residential to commercial solutions, we ensure lasting protection against water damage.",
+      keywords: ["waterproofing services", "Trinity Waterproofing", "residential waterproofing", "commercial waterproofing", "water damage protection"],
       ogImage: "/images/sound-healing.jpg",
       isActive: true,
     },
     "/faq": {
-      title: "FAQ - Frequently Asked Questions | OMSound Nepal",
-      description: "Find answers to common questions about Himalayan singing bowls, sound healing, orders, and more.",
-      keywords: ["FAQ", "singing bowls questions", "sound healing FAQ", "OMSound Nepal support"],
+      title: "FAQ - Frequently Asked Questions | Trinity Waterproofing",
+      description: "Find answers to common questions about waterproofing solutions, services, and more.",
+      keywords: ["FAQ", "waterproofing questions", "Trinity Waterproofing FAQ", "waterproofing support"],
       ogImage: "/images/faq-hero.jpg",
       isActive: true,
     },
     "/care-guide": {
-      title: "Sound Bowl Care Guide - Maintain Your Himalayan Singing Bowl | OMSound Nepal",
+      title: "Care Guide - Maintaining Your Waterproofing Solutions | Trinity Waterproofing",
       description:
-        "Learn how to properly clean, store, and care for your Himalayan singing bowls to preserve their sound and longevity.",
-      keywords: ["singing bowl care", "clean singing bowl", "store singing bowl", "himalayan bowl maintenance"],
+        "Learn how to properly clean, store, and care for your waterproofing solutions to preserve their effectiveness and longevity.",
+      keywords: ["waterproofing care", "clean waterproofing", "store waterproofing", "waterproofing maintenance"],
       ogImage: "/images/care-guide-hero.jpg",
       isActive: true,
     },
     "/privacy-policy": {
-      title: "Privacy Policy | OMSound Nepal",
-      description: "Understand how OMSound Nepal collects, uses, and protects your personal information.",
-      keywords: ["privacy policy", "data protection", "OMSound Nepal privacy", "user data"],
+      title: "Privacy Policy | Trinity Waterproofing",
+      description: "Understand how Trinity Waterproofing collects, uses, and protects your personal information.",
+      keywords: ["privacy policy", "data protection", "Trinity Waterproofing privacy", "user data"],
       ogImage: "/images/privacy-hero.jpg",
       isActive: true,
     },
     "/blog": {
-      title: "Blog - Insights & Wisdom | OMSound Nepal",
-      description: "Explore articles on sound healing, meditation, Himalayan culture, and the art of singing bowls.",
-      keywords: ["sound healing blog", "meditation articles", "singing bowls insights", "himalayan culture"],
+      title: "Blog - Insights on Sound Healing & Himalayan Culture | Trinity Waterproofing",
+      description: "trinitywaterproofing.com.np's blog features articles on waterproofing techniques, tips, and industry news.",
+      keywords: ["waterproofing blog", "waterproofing articles", "Trinity Waterproofing insights", "industry news"],
       ogImage: "/images/blog-hero.jpg",
       isActive: true,
     },
     "/careers": {
-      title: "Careers - Join Our Team | OMSound Nepal",
-      description: "Explore career opportunities at OMSound Nepal and become part of our mission to spread healing.",
-      keywords: ["careers", "jobs", "hiring", "OMSound Nepal jobs", "sound healing careers"],
+      title: "Careers - Join Our Team | Trinity Waterproofing",
+      description: "Explore career opportunities at Trinity Waterproofing and become part of our mission to provide quality waterproofing solutions.",
+      keywords: ["careers", "jobs", "hiring", "Trinity Waterproofing jobs", "waterproofing careers"],
       ogImage: "/images/careers-hero.jpg",
       isActive: true,
     },
     "/press-media": {
-      title: "Press & Media - OMSound Nepal",
-      description: "Access press releases, media mentions, and brand assets for OMSound Nepal.",
-      keywords: ["press", "media", "press kit", "OMSound Nepal news", "media contact"],
+      title: "Press & Media - Trinity Waterproofing",
+      description: "Access press releases, media mentions, and brand assets for Trinity Waterproofing.",
+      keywords: ["press", "media", "press kit", "Trinity Waterproofing news", "media contact"],
       ogImage: "/images/press-hero.jpg",
       isActive: true,
     },
     "/shipping-policy": {
-      title: "Shipping Policy - OMSound Nepal",
+      title: "Shipping Policy - Trinity Waterproofing",
       description: "Learn about our shipping methods, delivery times, and international shipping details.",
       keywords: ["shipping policy", "delivery", "international shipping", "order tracking"],
       ogImage: "/images/shipping-hero.jpg",
       isActive: true,
     },
     "/support-center": {
-      title: "Support Center - How Can We Help? | OMSound Nepal",
-      description: "Find answers to your questions and get support for your OMSound Nepal products and services.",
+      title: "Support Center - How Can We Help? | Trinity Waterproofing",
+      description: "Find answers to your questions and get support for your Trinity Waterproofing products and services.",
       keywords: ["support", "help center", "customer service", "troubleshooting"],
       ogImage: "/images/support-hero.jpg",
       isActive: true,
@@ -152,9 +152,9 @@ const getDefaultSEO = (path: string): SEOData => {
 
   return (
     defaults[path] || {
-      title: "OMSound Nepal",
-      description: "Authentic Himalayan singing bowls and sound healing instruments",
-      keywords: ["singing bowls", "nepal", "meditation"],
+      title: "Trinity Waterproofing",
+      description: " Premium waterproofing solutions for all your needs.",
+      keywords: ["waterproofing", "nepal", "waterproofing solutions"],
       isActive: true,
     }
   )
