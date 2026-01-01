@@ -1,17 +1,14 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { MapPin, Mail, Phone, Star, Users, Award, Heart, Music, Sparkles, ChevronDown, Play, Pause } from "lucide-react"
-import SEOHelmet from "../components/seo/SEOHelmet"
-import { useSEOData } from "../hooks/useSEOData"
+import { MapPin, Mail, Phone, Star, Users, Award, Shield, Droplets, Sparkles, ChevronDown, Play, Pause } from "lucide-react"
 
 const AboutPage = () => {
-  const { seoData } = useSEOData("/about")
   const [isPlaying, setIsPlaying] = useState(false)
   const [scrollY, setScrollY] = useState(0)
   const [, setActiveSection] = useState(0)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const [hoveredCard, setHoveredCard] = useState<number | null>(null)
+  const [] = useState<number | null>(null)
   const heroRef = useRef<HTMLDivElement>(null)
   const sectionsRef = useRef<HTMLDivElement[]>([])
 
@@ -51,67 +48,24 @@ const AboutPage = () => {
   }, [])
 
   const stats = [
-    { icon: Users, number: "500+", label: "Happy Customers", color: "text-blue-600" },
-    { icon: Award, number: "15+", label: "Years Experience", color: "text-green-600" },
-    { icon: Music, number: "1000+", label: "Bowls Crafted", color: "text-purple-600" },
-    { icon: Heart, number: "99%", label: "Satisfaction Rate", color: "text-red-600" },
+    { icon: Users, number: "500+", label: "Protected Properties", color: "text-blue-600" },
+    { icon: Award, number: "20+", label: "Years Experience", color: "text-green-600" },
+    { icon: Shield, number: "10000+", label: "Projects Completed", color: "text-purple-600" },
+    { icon: Star, number: "99%", label: "Client Satisfaction", color: "text-red-600" },
   ]
 
-  const teamMembers = [
-    {
-      name: "Rajesh Shakya",
-      role: "Master Craftsman",
-      image: "/placeholder.svg?height=300&width=300",
-      bio: "Third-generation artisan with 25+ years of experience in traditional bowl making.",
-      specialty: "Hand-hammering techniques",
-    },
-    {
-      name: "Sita Maharjan",
-      role: "Sound Therapist",
-      image: "/placeholder.svg?height=300&width=300",
-      bio: "Certified sound healer who ensures each bowl meets therapeutic standards.",
-      specialty: "Frequency tuning",
-    },
-    {
-      name: "Kumar Tamang",
-      role: "Quality Master",
-      image: "/placeholder.svg?height=300&width=300",
-      bio: "Oversees quality control and maintains our high craftsmanship standards.",
-      specialty: "Quality assurance",
-    },
-  ]
+  
 
   const milestones = [
-    { year: "2008", title: "Founded", description: "Started as a small family workshop in Kathmandu" },
-    { year: "2012", title: "First Export", description: "Began shipping internationally to wellness centers" },
-    { year: "2016", title: "Artisan Collective", description: "Expanded to work with 20+ master craftsmen" },
-    { year: "2020", title: "Digital Presence", description: "Launched online platform during pandemic" },
-    { year: "2024", title: "Global Recognition", description: "Featured in international wellness magazines" },
+    { year: "2004", title: "Founded", description: "Started as a small waterproofing solutions provider in Kathmandu" },
+    { year: "2010", title: "Expansion", description: "Expanded to commercial and industrial waterproofing projects" },
+    { year: "2015", title: "Certification", description: "Achieved ISO certification and industry quality standards" },
+    { year: "2020", title: "Product Line", description: "Launched comprehensive range of coatings and membranes" },
+    { year: "2024", title: "Market Leader", description: "Recognized as leading waterproofing solutions provider in Nepal" },
   ]
-
-  // Default SEO while loading
-  const defaultSEO = {
-    title: "About OMSound Nepal - Our Story & Mission",
-    description:
-      "Learn about OMSound Nepal's journey in preserving ancient Himalayan singing bowl traditions while bringing authentic healing instruments to the modern world.",
-    keywords: ["about omsound", "nepal artisans", "singing bowl history", "himalayan craftsmanship"],
-    ogImage: "/images/about-hero.jpg",
-  }
-
-  const currentSEO = seoData || defaultSEO
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-blue-50 overflow-hidden">
-      <SEOHelmet
-        title={currentSEO.title}
-        description={currentSEO.description}
-        keywords={currentSEO.keywords}
-        image={currentSEO.ogImage}
-        type="website"
-        structuredData={seoData?.structuredData}
-        url="https://omsoundnepal.com/about"
-      />
-
       {/* Floating Elements */}
       <div className="fixed inset-0 pointer-events-none z-10">
         {[...Array(6)].map((_, i) => (
@@ -155,7 +109,7 @@ const AboutPage = () => {
           {/* Fallback image */}
           <img
             src="/placeholder.svg?height=1080&width=1920"
-            alt="Himalayan workshop"
+            alt="Waterproofing protection"
             className="absolute inset-0 w-full h-full object-cover"
           />
         </video>
@@ -163,29 +117,24 @@ const AboutPage = () => {
         <div className="relative z-20 text-center text-ivory max-w-4xl px-4">
           <div className="animate-fade-in-up">
             <h1 className="text-6xl md:text-8xl font-serif mb-6 bg-gradient-to-r from-gold via-yellow-300 to-gold bg-clip-text text-transparent animate-pulse">
-              OMSound Nepal
+              Trinity Waterproofing
             </h1>
-            <p className="text-xl md:text-2xl mb-8 opacity-90">Where Ancient Wisdom Meets Modern Healing</p>
+            <p className="text-xl md:text-2xl mb-8 opacity-90">Protecting Your Properties, Preserving Your Peace of Mind</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button
                 onClick={() => setIsPlaying(!isPlaying)}
                 className="flex items-center gap-2 bg-gold text-navy px-8 py-4 rounded-full hover:bg-yellow-300 transition-all duration-300 transform hover:scale-105 shadow-lg"
               >
                 {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                {isPlaying ? "Pause" : "Play"} Bowl Sound
+                {isPlaying ? "Pause" : "Play"} Our Story
               </button>
-              <a
-                href="/sound-healing"
-                className="border-2 border-gold text-gold px-8 py-4 rounded-full hover:bg-gold hover:text-navy transition-all duration-300 transform hover:scale-105"
-              >
-                Learn Sound Healing
-              </a>
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ChevronDown className="w-8 h-8 text-gold" />
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
+          <ChevronDown className="w-6 h-6 text-gold" />
         </div>
       </div>
 
@@ -194,192 +143,103 @@ const AboutPage = () => {
         ref={(el) => {
           if (el) sectionsRef.current[0] = el
         }}
-        className="py-20 bg-white relative overflow-hidden"
+        className="py-20 bg-white border-b border-gold/20"
       >
-        <div className="container-custom">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <div
                 key={index}
-                className="text-center group cursor-pointer"
-                style={{
-                  animationDelay: `${index * 0.1}s`,
-                }}
-                onMouseEnter={() => setHoveredCard(index)}
-                onMouseLeave={() => setHoveredCard(null)}
+                className="text-center transform hover:scale-110 transition-all duration-300 p-6 rounded-xl hover:bg-gold/5"
               >
-                <div
-                  className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-gold/20 to-yellow-200/20 mb-4 group-hover:scale-110 transition-transform duration-300 ${stat.color}`}
-                >
-                  <stat.icon className="w-8 h-8" />
+                <div className={`inline-flex items-center justify-center w-16 h-16 bg-gold/20 rounded-full mb-4`}>
+                  <stat.icon className={`w-8 h-8 ${stat.color}`} />
                 </div>
-                <div
-                  className={`text-4xl font-bold mb-2 transition-all duration-300 ${hoveredCard === index ? "text-gold scale-110" : "text-navy"}`}
-                >
-                  {stat.number}
-                </div>
-                <div className="text-gray-600 font-medium">{stat.label}</div>
+                <div className="text-4xl font-bold text-navy mb-2">{stat.number}</div>
+                <p className="text-gray-600">{stat.label}</p>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Mission & Vision Section */}
+      {/* About Section */}
       <div
         ref={(el) => {
           if (el) sectionsRef.current[1] = el
         }}
-        className="py-20 bg-gradient-to-br from-gold/5 to-yellow-50 relative overflow-hidden"
+        className="py-20 bg-gradient-to-br from-blue-50 to-purple-50"
       >
-        <div className="container-custom">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-serif text-navy mb-6">Our Purpose</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Guided by ancient wisdom and modern innovation, we're committed to bringing authentic healing to the
-              world.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Mission */}
-            <div className="group">
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-l-4 border-gold">
-                <div className="flex items-center mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-r from-gold to-yellow-400 rounded-full flex items-center justify-center mr-4">
-                    <Heart className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-3xl font-serif text-navy">Our Mission</h3>
-                </div>
-                <p className="text-gray-700 text-lg leading-relaxed mb-6">
-                  To preserve and share the ancient art of Himalayan singing bowl craftsmanship while empowering
-                  individuals worldwide to discover inner peace, healing, and spiritual growth through authentic sound
-                  therapy.
-                </p>
-                <div className="space-y-3">
-                  {[
-                    "Preserve traditional craftsmanship techniques",
-                    "Support local artisan communities",
-                    "Provide authentic therapeutic instruments",
-                    "Educate about sound healing benefits",
-                  ].map((item, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-gold rounded-full"></div>
-                      <span className="text-gray-600">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-5xl font-serif text-center text-navy mb-16">Our Mission & Vision</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h3 className="text-3xl font-serif text-navy mb-6">Our Mission</h3>
+              <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                Trinity Waterproofing is dedicated to protecting properties and providing peace of mind through innovative, 
+                high-quality waterproofing solutions. We combine industry expertise with cutting-edge products to deliver 
+                comprehensive protection against water damage.
+              </p>
+              <p className="text-gray-600 text-lg leading-relaxed">
+                Since 2004, we've been the trusted partner for residential, commercial, and industrial waterproofing needs 
+                across Nepal, serving thousands of satisfied clients with unwavering commitment to excellence.
+              </p>
             </div>
-
-            {/* Vision */}
-            <div className="group">
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-l-4 border-blue-500">
-                <div className="flex items-center mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-4">
-                    <Sparkles className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-3xl font-serif text-navy">Our Vision</h3>
-                </div>
-                <p className="text-gray-700 text-lg leading-relaxed mb-6">
-                  To become the world's most trusted source of authentic Himalayan singing bowls, creating a global
-                  community where ancient healing wisdom transforms modern lives and connects souls across cultures.
-                </p>
-                <div className="space-y-3">
-                  {[
-                    "Global accessibility to authentic healing tools",
-                    "Bridge ancient wisdom with modern wellness",
-                    "Foster international healing community",
-                    "Sustainable cultural preservation",
-                  ].map((item, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-gray-600">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Call to Action */}
-          <div className="text-center mt-16">
-            <div className="bg-gradient-to-r from-navy to-blue-800 rounded-2xl p-8 text-white relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-gold/10 to-yellow-300/10"></div>
-              <div className="relative z-10">
-                <h3 className="text-2xl font-serif mb-4">Ready to Begin Your Healing Journey?</h3>
-                <p className="text-lg mb-6 opacity-90">
-                  Explore our collection of authentic singing bowls and discover the transformative power of sound
-                  healing.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a
-                    href="/shop"
-                    className="bg-gold text-navy px-8 py-3 rounded-full font-semibold hover:bg-yellow-300 transition-all duration-300 transform hover:scale-105"
-                  >
-                    Shop Singing Bowls
-                  </a>
-                  <a
-                    href="/contact"
-                    className="border-2 border-gold text-gold px-8 py-3 rounded-full hover:bg-gold hover:text-navy transition-all duration-300 transform hover:scale-105"
-                  >
-                    Get Expert Guidance
-                  </a>
-                </div>
+            <div className="relative">
+              <img
+                src="/placeholder.svg?height=400&width=500"
+                alt="Our mission"
+                className="rounded-2xl shadow-2xl"
+              />
+              <div className="absolute top-8 right-8 bg-gold text-navy px-6 py-4 rounded-full font-semibold shadow-lg">
+                20+ Years Strong
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Our Story Section */}
+      {/* Core Values Section */}
       <div
         ref={(el) => {
           if (el) sectionsRef.current[2] = el
         }}
-        className="py-20 bg-gradient-to-r from-blue-50 to-purple-50 relative"
+        className="py-20 bg-white"
       >
-        <div className="container-custom">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-6">
-              <h2 className="text-5xl font-serif text-navy mb-8 relative">
-                Our Journey
-                <div className="absolute -bottom-2 left-0 w-20 h-1 bg-gradient-to-r from-gold to-yellow-400"></div>
-              </h2>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                In the mystical valleys of Nepal, where the Himalayas touch the sky, OMSound Nepal was born from a dream
-                to preserve ancient healing traditions while bringing their transformative power to the modern world.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Our journey began in 2008 when second-generation Nepali bowl maker Ruchika Baidya decided to share her
-                family's age-old singing bowl-making secrets with the world. What started as a small workshop has grown
-                into a global movement of healing and harmony.
-              </p>
-              <div className="flex flex-wrap gap-4 mt-8">
-                {["Authentic", "Handcrafted", "Therapeutic", "Sustainable"].map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-4 py-2 bg-gold/20 text-navy rounded-full text-sm font-medium hover:bg-gold hover:text-white transition-colors duration-300 cursor-pointer"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="relative">
-              <div className="relative overflow-hidden rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500">
-                <img
-                  src="https://res.cloudinary.com/dei0ymk1p/image/upload/v1752241709/a-photograph-of-an-elegant-bronze-singin__qn7sFHYTIqpdP7WnFkp4g_LYhkjWLnTeCqR80Yrl-J-w_vmpzbw.jpg?height=600&width=800"
-                  alt="Artisan crafting singing bowl"
-                  className="w-full h-96 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-navy/50 to-transparent"></div>
-                <div className="absolute bottom-6 left-6 text-white">
-                  <h3 className="text-xl font-semibold mb-2">Master at Work</h3>
-                  <p className="text-sm opacity-90">Hand-hammering a therapeutic singing bowl</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-5xl font-serif text-center text-navy mb-16">Core Values</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Quality Excellence",
+                description:
+                  "We commit to the highest standards in materials, workmanship, and service delivery in every project we undertake.",
+                icon: Award,
+              },
+              {
+                title: "Client Trust",
+                description:
+                  "Your satisfaction is our priority. We build lasting relationships through transparency, reliability, and exceptional results.",
+                icon: Shield,
+              },
+              {
+                title: "Innovation",
+                description:
+                  "We continuously improve our products and processes, staying ahead of industry trends to provide cutting-edge solutions.",
+                icon: Droplets,
+              },
+            ].map((value, index) => (
+              <div
+                key={index}
+                className="bg-gradient-to-br from-gold/5 to-transparent p-8 rounded-2xl border border-gold/20 hover:border-gold/50 transition-all duration-300 transform hover:-translate-y-2"
+              >
+                <div className="inline-flex items-center justify-center w-14 h-14 bg-gold text-navy rounded-full mb-6">
+                  <value.icon className="w-7 h-7" />
                 </div>
+                <h3 className="text-2xl font-semibold text-navy mb-4">{value.title}</h3>
+                <p className="text-gray-600">{value.description}</p>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
@@ -389,82 +249,34 @@ const AboutPage = () => {
         ref={(el) => {
           if (el) sectionsRef.current[3] = el
         }}
-        className="py-20 bg-white relative"
-      >
-        <div className="container-custom">
-          <h2 className="text-5xl font-serif text-center text-navy mb-16">Our Milestones</h2>
-          <div className="relative">
-            <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-gold to-yellow-400"></div>
-            {milestones.map((milestone, index) => (
-              <div
-                key={index}
-                className={`flex items-center mb-12 ${index % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}
-              >
-                <div className={`w-1/2 ${index % 2 === 0 ? "pr-8 text-right" : "pl-8 text-left"}`}>
-                  <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 border-l-4 border-gold">
-                    <div className="text-gold font-bold text-lg mb-2">{milestone.year}</div>
-                    <h3 className="text-xl font-semibold text-navy mb-2">{milestone.title}</h3>
-                    <p className="text-gray-600">{milestone.description}</p>
-                  </div>
-                </div>
-                <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-gold rounded-full border-4 border-white shadow-lg"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Team Section */}
-      <div
-        ref={(el) => {
-          if (el) sectionsRef.current[4] = el
-        }}
         className="py-20 bg-gradient-to-br from-purple-50 to-blue-50"
       >
-        <div className="container-custom">
-          <h2 className="text-5xl font-serif text-center text-navy mb-16">Meet Our Artisans</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {teamMembers.map((member, index) => (
-              <div
-                key={index}
-                className="group cursor-pointer"
-                onMouseEnter={() => setHoveredCard(index + 10)}
-                onMouseLeave={() => setHoveredCard(null)}
-              >
-                <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
-                  <div className="relative overflow-hidden">
-                    <img
-                      src={member.image || "/placeholder.svg"}
-                      alt={member.name}
-                      className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-navy/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-navy mb-2">{member.name}</h3>
-                    <div className="text-gold font-medium mb-3">{member.role}</div>
-                    <p className="text-gray-600 text-sm mb-4">{member.bio}</p>
-                    <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-gold" />
-                      <span className="text-sm text-gray-500">{member.specialty}</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-5xl font-serif text-center text-navy mb-16">Our Journey</h2>
+          <div className="relative">
+            {/* Timeline Line */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-gold via-gold to-transparent"></div>
+
+            {/* Milestones */}
+            <div className="space-y-12">
+              {milestones.map((milestone, index) => (
+                <div key={index} className={`flex ${index % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}>
+                  <div className={`w-1/2 ${index % 2 === 0 ? "pr-12" : "pl-12"}`}>
+                    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                      <div className="text-gold font-bold text-lg mb-2">{milestone.year}</div>
+                      <h3 className="text-xl font-semibold text-navy mb-2">{milestone.title}</h3>
+                      <p className="text-gray-600">{milestone.description}</p>
                     </div>
                   </div>
+                  <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-gold rounded-full border-4 border-white shadow-lg"></div>
                 </div>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-12">
-            <p className="text-gray-600 mb-6">Want to learn more about our sound healing practices?</p>
-            <a
-              href="/sound-healing"
-              className="inline-flex items-center gap-2 text-gold hover:text-yellow-600 font-medium transition-colors duration-300"
-            >
-              Discover Sound Healing <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
-            </a>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
+      
       {/* Interactive Contact Section */}
       <div
         ref={(el) => {
@@ -484,11 +296,11 @@ const AboutPage = () => {
           ></div>
         </div>
 
-        <div className="container-custom relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-5xl font-serif text-ivory mb-6">Connect With Us</h2>
+            <h2 className="text-5xl font-serif text-ivory mb-6">Connect With Trinity</h2>
             <p className="text-xl text-ivory/80 max-w-2xl mx-auto">
-              Ready to begin your sound healing journey? We're here to guide you every step of the way.
+              Ready to protect your property? Contact us today for a free consultation and assessment.
             </p>
           </div>
 
@@ -496,12 +308,12 @@ const AboutPage = () => {
             {[
               {
                 icon: MapPin,
-                title: "Visit Our Workshop",
-                info: "Sanepa, Lalitpur, Nepal",
-                detail: "Open Mon-Fri, 10am-6pm",
+                title: "Visit Our Office",
+                info: "Kathmandu, Nepal",
+                detail: "Open Mon-Fri, 9am-5pm",
               },
-              { icon: Mail, title: "Email Us", info: "info@omsound.com", detail: "Response within 24 hours" },
-              { icon: Phone, title: "Call Us", info: "+977 1234 5678", detail: "Available 9am-5pm (GMT+5:45)" },
+              { icon: Mail, title: "Email Us", info: "info@trinitywaterproofing.com", detail: "Response within 24 hours" },
+              { icon: Phone, title: "Call Us", info: "+977 1-XXXX-XXXX", detail: "Available 9am-5pm (GMT+5:45)" },
             ].map((contact, index) => (
               <div
                 key={index}
@@ -569,7 +381,7 @@ const AboutPage = () => {
       {/* Floating Action Button */}
       <div className="fixed bottom-8 right-8 z-50">
         <button className="bg-gradient-to-r from-gold to-yellow-400 text-navy p-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 animate-pulse">
-          <Music className="w-6 h-6" />
+          <Shield className="w-6 h-6" />
         </button>
       </div>
     </div>

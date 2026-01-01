@@ -113,7 +113,7 @@ const StorySection = () => {
     <p className="text-charcoal/70 text-sm md:text-base">Projects Completed</p>
   </div>
   <div className="text-center">
-    <div className="text-gold text-3xl md:text-4xl font-serif font-bold mb-2">100%</div>
+    <div className="text-gold text-3xl md:text-4xl font-serif font-bold mb-2">99%</div>
     <p className="text-charcoal/70 text-sm md:text-base">Client Satisfaction</p>
   </div>
 </div>
