@@ -11,9 +11,6 @@ import {
   Send,
   Instagram,
   Facebook,
-  Youtube,
-  MessageCircle,
-  Sparkles,
   Globe,
   Users,
   Award,
@@ -22,11 +19,14 @@ import {
   CheckCircle,
   ArrowRight,
   Share2,
+  MessageCircle,
+  Sparkles,
 } from "lucide-react"
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
+    phoneNumber: "",
     email: "",
     subject: "",
     message: "",
@@ -57,7 +57,7 @@ const ContactPage = () => {
 
   useEffect(() => {
     const filledFields = Object.values(formData).filter((value) => value.trim() !== "").length
-    setFormProgress((filledFields / 4) * 100)
+    setFormProgress((filledFields / 5) * 100)
   }, [formData])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -72,35 +72,43 @@ const ContactPage = () => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      // Simulate form submission or connect to your API
+      await new Promise((resolve) => setTimeout(resolve, 2000))
 
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      subject: "",
-      message: "",
-    })
-    setIsSubmitting(false)
+      // Reset form
+      setFormData({
+        fullName: "",
+        phoneNumber: "",
+        email: "",
+        subject: "",
+        message: "",
+      })
+      setFormProgress(0)
 
-    // Show success message
-    alert("Thank you for your message! We'll get back to you within 24 hours.")
+      // Show success message
+      alert("Thank you for your message! We will get back to you within 24 hours.")
+    } catch (error) {
+      console.error("Error submitting form:", error)
+      alert("Failed to submit form. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const contactInfo = [
     {
       icon: MapPin,
-      title: "Visit Our Workshop",
-      details: ["Peace Love & Art Community", "Sanepa, Lalitpur", "Kathmandu Valley, Nepal"],
-      extra: "Open Monday-Friday, 10am-6pm NPT",
+      title: "Visit Our Office",
+      details: ["Trinity Waterproofing", "Kathmandu, Nepal", "Central Nepal Region"],
+      extra: "Open Monday-Friday, 9am-5pm NPT",
       color: "from-blue-500 to-cyan-500",
       bgColor: "from-blue-500/20 to-cyan-500/20",
     },
     {
       icon: Phone,
       title: "Call Us",
-      details: ["+977 1234 5678"],
+      details: ["+977 985-1042257"],
       extra: "Available 9am-5pm (GMT+5:45)",
       color: "from-green-500 to-emerald-500",
       bgColor: "from-green-500/20 to-emerald-500/20",
@@ -108,7 +116,7 @@ const ContactPage = () => {
     {
       icon: Mail,
       title: "Email Us",
-      details: ["info@omsounds.com"], // Updated email address
+      details: ["info@trinitywaterproofing.com"],
       extra: "We typically respond within 24 hours",
       color: "from-purple-500 to-pink-500",
       bgColor: "from-purple-500/20 to-pink-500/20",
@@ -116,7 +124,7 @@ const ContactPage = () => {
     {
       icon: Clock,
       title: "Business Hours",
-      details: ["Mon-Fri: 10am-6pm", "Sat: 10am-4pm", "Sun: Closed"],
+      details: ["Mon-Fri: 9am-5pm", "Sat: 10am-2pm", "Sun: Closed"],
       extra: "Nepal Standard Time (GMT+5:45)",
       color: "from-orange-500 to-red-500",
       bgColor: "from-orange-500/20 to-red-500/20",
@@ -125,42 +133,52 @@ const ContactPage = () => {
 
   const subjects = [
     "General Inquiry",
-    "Product Information",
-    "Custom Orders",
-    "Wholesale Inquiries",
-    "Sound Healing Sessions",
-    "Shipping & Returns",
-    "Technical Support",
-    "Partnership Opportunities",
+    "Free Inspection Request",
+    "Service Quote",
+    "Bathroom Waterproofing",
+    "Terrace Protection",
+    "Basement Solutions",
+    "Anti-Termite Treatment",
+    "Emergency Repair",
   ]
 
   const socialLinks = [
     {
+      icon: Facebook,
+      href: "https://facebook.com/trinitywaterproofing",
+      label: "Facebook",
+      color: "from-blue-600 to-blue-700",
+    },
+    {
       icon: Instagram,
-      href: "https://instagram.com/omsoundnepal",
+      href: "https://instagram.com/trinitywaterproofing",
       label: "Instagram",
       color: "from-pink-500 to-purple-500",
     },
     {
-      icon: Facebook,
-      href: "https://facebook.com/omsoundnepal",
-      label: "Facebook",
-      color: "from-blue-600 to-blue-700",
+      icon: Globe,
+      href: "https://trinitywaterproofing.com",
+      label: "Website",
+      color: "from-blue-400 to-cyan-500",
     },
-    { icon: Youtube, href: "https://youtube.com/omsoundnepal", label: "YouTube", color: "from-red-500 to-red-600" },
-    { icon: Share2, href: "https://tiktok.com/@omsoundnepal", label: "TikTok", color: "from-black to-gray-700" }, // Added TikTok
+    {
+      icon: Share2,
+      href: "https://linkedin.com/company/trinity-waterproofing",
+      label: "LinkedIn",
+      color: "from-blue-500 to-blue-600",
+    },
   ]
 
   const quickHelp = [
-    { title: "Frequently Asked Questions", href: "/faq", icon: MessageCircle },
-    { title: "Shipping & Returns", href: "/shipping", icon: Globe },
-    { title: "Bowl Care Guide", href: "/care-guide", icon: Award },
+    { title: "Get Free Inspection", href: "/inspection", icon: CheckCircle },
+    { title: "View Our Services", href: "/services", icon: Globe },
+    { title: "Project Gallery", href: "/portfolio", icon: Award },
   ]
 
   const stats = [
-    { number: "500+", label: "Happy Customers", icon: Users },
+    { number: "500+", label: "Properties Protected", icon: Users },
     { number: "24hrs", label: "Response Time", icon: Clock },
-    { number: "15+", label: "Years Experience", icon: Award },
+    { number: "20+", label: "Years Experience", icon: Award },
     { number: "99%", label: "Satisfaction Rate", icon: Star },
   ]
 
@@ -189,189 +207,152 @@ const ContactPage = () => {
       {/* Hero Section */}
       <div
         ref={heroRef}
-        className="relative h-screen flex items-center justify-center overflow-hidden pt-24" // Increased padding-top
+        className="relative min-h-96 flex items-center justify-center overflow-hidden"
         style={{
-          transform: `translateY(${scrollY * 0.3}px)`,
+          transform: `translateY(${scrollY * 0.5}px)`,
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-navy/90 via-purple-900/80 to-indigo-900/90 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy/80 via-navy/60 to-transparent z-10" />
 
-        {/* Animated Background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-blue-600/20 to-indigo-600/20 animate-pulse"></div>
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute rounded-full bg-gradient-to-r from-gold/10 to-yellow-300/10 animate-ping"
-              style={{
-                left: `${15 + i * 15}%`,
-                top: `${20 + i * 10}%`,
-                width: `${60 + i * 30}px`,
-                height: `${60 + i * 30}px`,
-                animationDelay: `${i * 0.7}s`,
-                animationDuration: `${3 + i * 0.5}s`,
-              }}
-            />
-          ))}
+        <div className="relative z-20 text-center text-ivory max-w-4xl px-4">
+          <h1 className="text-6xl md:text-7xl font-serif mb-6 bg-gradient-to-r from-gold via-yellow-300 to-gold bg-clip-text text-transparent animate-pulse">
+            Get In Touch
+          </h1>
+          <p className="text-xl md:text-2xl mb-4 opacity-90">
+            Contact Trinity Waterproofing Today
+          </p>
+          <p className="text-lg opacity-80 max-w-2xl mx-auto">
+            Have questions about our waterproofing solutions? Need a free inspection? Our team is here to help protect your property.
+          </p>
         </div>
 
-        <div className="relative z-20 text-center text-ivory max-w-5xl px-4 mt-16">
-          {" "}
-          {/* Added margin-top here */}
-          <div className="mb-12">
-            <h1 className="text-7xl md:text-9xl font-serif mb-8 bg-gradient-to-r from-gold via-yellow-300 to-gold bg-clip-text text-transparent animate-pulse">
-              Get in Touch
-            </h1>
-            <p className="text-2xl md:text-3xl mb-8 opacity-90 leading-relaxed max-w-3xl mx-auto">
-              Have questions about our singing bowls, sound healing sessions, or custom orders? We're here to help you
-              find the perfect resonance for your journey.
-            </p>
-          </div>
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-gold/20 hover:border-gold/40 transition-all duration-300 transform hover:scale-105"
-                onMouseEnter={() => setHoveredCard(index)}
-                onMouseLeave={() => setHoveredCard(null)}
-              >
-                <stat.icon
-                  className={`w-8 h-8 mx-auto mb-3 transition-all duration-300 ${hoveredCard === index ? "text-gold scale-110" : "text-ivory"}`}
-                />
-                <div
-                  className={`text-2xl font-bold mb-1 transition-all duration-300 ${hoveredCard === index ? "text-gold" : "text-ivory"}`}
-                >
-                  {stat.number}
-                </div>
-                <div className="text-ivory/70 text-sm">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <button className="bg-gradient-to-r from-gold to-yellow-400 text-navy px-10 py-4 rounded-full hover:from-yellow-400 hover:to-gold transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold">
-              Start Conversation
-            </button>
-            <a
-              href="https://www.google.com/maps/place/Peace+Love+%26+Art+Community/@27.6805106,85.2994419,17z/data=!4m14!1m7!3m6!1s0x39eb19004c6db23f:0xf8bd651a8bf58139!2sPeace+Love+%26+Art+Community!8m2!3d27.6805059!4d85.3040553!16s%2Fg%2F11xgq1gfb8!3m5!1s0x39eb19004c6db23f:0xf8bd651a8bf58139!8m2!3d27.6805059!4d85.3040553!16s%2Fg%2F11xgq1gfb8?entry=ttu&g_ep=EgoyMDI1MDcwOS4wIKXMDSoASAFQAw%3D%3D"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border-2 border-gold text-gold px-10 py-4 rounded-full hover:bg-gold hover:text-navy transition-all duration-300 transform hover:scale-105 font-semibold"
-            >
-              View Location
-            </a>
-          </div>
-        </div>
-
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ChevronDown className="w-8 h-8 text-gold" />
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
+          <ChevronDown className="w-6 h-6 text-gold" />
         </div>
       </div>
 
-      {/* Contact Information Cards */}
+      {/* Stats Section */}
       <div
         ref={(el) => {
           if (el) sectionsRef.current[0] = el
         }}
-        className="py-20 bg-gradient-to-br from-ivory via-white to-blue-50 relative"
+        className="py-16 bg-white/5 backdrop-blur-sm"
       >
-        <div className="container-custom">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-serif text-navy mb-6">How to Reach Us</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Multiple ways to connect with our team. Choose what works best for you.
-            </p>
-          </div>
-
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {contactInfo.map((info, index) => (
+            {stats.map((stat, index) => (
               <div
                 key={index}
-                className="group cursor-pointer h-full" // Added h-full here
-                onMouseEnter={() => setHoveredCard(index + 10)}
+                onMouseEnter={() => setHoveredCard(index)}
                 onMouseLeave={() => setHoveredCard(null)}
+                className={`text-center p-6 rounded-2xl transition-all duration-300 ${
+                  hoveredCard === index ? "bg-white/10 scale-105" : "bg-white/5"
+                }`}
               >
-                <div
-                  className={`bg-gradient-to-br ${info.bgColor} backdrop-blur-sm border border-gold/20 rounded-2xl p-8 transform transition-all duration-500 hover:scale-105 hover:-translate-y-2 shadow-lg hover:shadow-2xl h-full flex flex-col`} // Added h-full and flex-col
-                >
-                  <div
-                    className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r ${info.color} rounded-full mb-6 group-hover:scale-110 transition-transform duration-300`}
-                  >
-                    <info.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-serif text-navy mb-4">{info.title}</h3>
-                  <div className="space-y-2 mb-4 flex-grow">
-                    {" "}
-                    {/* flex-grow to push extra to bottom */}
-                    {info.details.map((detail, detailIndex) => (
-                      <p key={detailIndex} className="text-gray-700 font-medium">
-                        {detail}
-                      </p>
-                    ))}
-                  </div>
-                  <p className="text-gray-500 text-sm mt-auto">{info.extra}</p> {/* mt-auto to push to bottom */}
-                  <div
-                    className={`mt-4 h-1 bg-gradient-to-r ${info.color} rounded-full transform transition-all duration-500 ${hoveredCard === index + 10 ? "scale-x-100" : "scale-x-0"} origin-left`}
-                  ></div>
+                <div className="w-14 h-14 bg-gradient-to-br from-gold/30 to-gold/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <stat.icon className="w-7 h-7 text-gold" />
                 </div>
+                <div className="text-4xl font-bold text-gold mb-2">{stat.number}</div>
+                <p className="text-ivory/70">{stat.label}</p>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Contact Form & Map Section */}
+      {/* Contact Information & Form Section */}
       <div
         ref={(el) => {
           if (el) sectionsRef.current[1] = el
         }}
-        className="py-20 bg-gradient-to-br from-navy via-indigo-900 to-purple-900 relative"
+        className="py-20"
       >
-        <div className="container-custom">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Contact Info Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            {contactInfo.map((info, index) => (
+              <div
+                key={index}
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-gold/20 hover:border-gold/40 transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+              >
+                <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${info.color} flex items-center justify-center mb-4`}>
+                  <info.icon className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-serif text-gold mb-3">{info.title}</h3>
+                <div className="space-y-1 mb-4">
+                  {info.details.map((detail, idx) => (
+                    <p key={idx} className="text-ivory/80 text-sm">
+                      {detail}
+                    </p>
+                  ))}
+                </div>
+                <p className="text-ivory/60 text-xs">{info.extra}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Form & Map Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Contact Form */}
-            <div className="space-y-8">
-              <div className="text-center lg:text-left">
-                <h2 className="text-5xl font-serif text-gold mb-6">Send Us a Message</h2>
-                <p className="text-xl text-ivory/80">
-                  Ready to start your sound healing journey? Fill out the form below and we'll get back to you within 24
-                  hours.
-                </p>
-              </div>
+            <div className="space-y-6">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-gold/20">
+                <h2 className="text-3xl font-serif text-ivory mb-6">Send Us a Message</h2>
 
-              {/* Form Progress */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-2 border border-gold/20">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-ivory/70 text-sm">Form Progress</span>
-                  <span className="text-gold text-sm font-semibold">{Math.round(formProgress)}%</span>
+                {/* Form Progress Bar */}
+                <div className="mb-6">
+                  <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-gold to-yellow-400 transition-all duration-300"
+                      style={{ width: `${formProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-ivory/60 mt-2">{Math.round(formProgress)}% complete</p>
                 </div>
-                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-gold to-yellow-400 rounded-full transition-all duration-500"
-                    style={{ width: `${formProgress}%` }}
-                  />
-                </div>
-              </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Full Name */}
                   <div className="relative">
-                    <label htmlFor="name" className="block text-sm font-medium text-ivory/80 mb-2">
-                      Your Name *
+                    <label htmlFor="fullName" className="block text-sm font-medium text-ivory/80 mb-2">
+                      Full Name *
                     </label>
                     <input
                       type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="fullName"
+                      name="fullName"
+                      value={formData.fullName}
                       onChange={handleInputChange}
-                      onFocus={() => setActiveInput("name")}
+                      onFocus={() => setActiveInput("fullName")}
                       onBlur={() => setActiveInput(null)}
                       required
-                      className={`w-full px-4 py-4 bg-white/10 border rounded-xl text-ivory placeholder-ivory/50 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300 ${activeInput === "name" ? "border-gold scale-105" : "border-gold/30"}`}
-                      placeholder="Enter your full name"
+                      className={`w-full px-4 py-4 bg-white/10 border rounded-xl text-ivory placeholder-ivory/50 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent resize-none transition-all duration-300 ${
+                        activeInput === "fullName" ? "border-gold scale-105" : "border-gold/30"
+                      }`}
+                      placeholder="Your full name"
                     />
                   </div>
+
+                  {/* Phone Number */}
+                  <div className="relative">
+                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-ivory/80 mb-2">
+                      Phone Number *
+                    </label>
+                    <input
+                      type="tel"
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={handleInputChange}
+                      onFocus={() => setActiveInput("phoneNumber")}
+                      onBlur={() => setActiveInput(null)}
+                      required
+                      className={`w-full px-4 py-4 bg-white/10 border rounded-xl text-ivory placeholder-ivory/50 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent resize-none transition-all duration-300 ${
+                        activeInput === "phoneNumber" ? "border-gold scale-105" : "border-gold/30"
+                      }`}
+                      placeholder="+977 XXXXXXXXXX"
+                    />
+                  </div>
+
+                  {/* Email */}
                   <div className="relative">
                     <label htmlFor="email" className="block text-sm font-medium text-ivory/80 mb-2">
                       Email Address *
@@ -385,97 +366,106 @@ const ContactPage = () => {
                       onFocus={() => setActiveInput("email")}
                       onBlur={() => setActiveInput(null)}
                       required
-                      className={`w-full px-4 py-4 bg-white/10 border rounded-xl text-ivory placeholder-ivory/50 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300 ${activeInput === "email" ? "border-gold scale-105" : "border-gold/30"}`}
+                      className={`w-full px-4 py-4 bg-white/10 border rounded-xl text-ivory placeholder-ivory/50 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent resize-none transition-all duration-300 ${
+                        activeInput === "email" ? "border-gold scale-105" : "border-gold/30"
+                      }`}
                       placeholder="your@email.com"
                     />
                   </div>
-                </div>
 
-                <div className="relative">
-                  <label htmlFor="subject" className="block text-sm font-medium text-ivory/80 mb-2">
-                    Subject *
-                  </label>
-                  <select
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleInputChange}
-                    onFocus={() => setActiveInput("subject")}
-                    onBlur={() => setActiveInput(null)}
-                    required
-                    className={`w-full px-4 py-4 bg-white/10 border rounded-xl text-ivory focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300 ${activeInput === "subject" ? "border-gold scale-105" : "border-gold/30"}`}
+                  {/* Subject */}
+                  <div className="relative">
+                    <label htmlFor="subject" className="block text-sm font-medium text-ivory/80 mb-2">
+                      Subject *
+                    </label>
+                    <select
+                      id="subject"
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleInputChange}
+                      onFocus={() => setActiveInput("subject")}
+                      onBlur={() => setActiveInput(null)}
+                      required
+                      className={`w-full px-4 py-4 bg-white/10 border rounded-xl text-ivory focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300 ${
+                        activeInput === "subject" ? "border-gold scale-105" : "border-gold/30"
+                      }`}
+                    >
+                      <option value="">Select a subject</option>
+                      {subjects.map((subject, index) => (
+                        <option key={index} value={subject} className="bg-navy text-ivory">
+                          {subject}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Message */}
+                  <div className="relative">
+                    <label htmlFor="message" className="block text-sm font-medium text-ivory/80 mb-2">
+                      Message *
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      onFocus={() => setActiveInput("message")}
+                      onBlur={() => setActiveInput(null)}
+                      required
+                      rows={6}
+                      className={`w-full px-4 py-4 bg-white/10 border rounded-xl text-ivory placeholder-ivory/50 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent resize-none transition-all duration-300 ${
+                        activeInput === "message" ? "border-gold scale-105" : "border-gold/30"
+                      }`}
+                      placeholder="Tell us about your waterproofing needs..."
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-gradient-to-r from-gold to-yellow-400 text-navy py-4 rounded-xl font-semibold hover:from-yellow-400 hover:to-gold transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <option value="">Select a subject</option>
-                    {subjects.map((subject, index) => (
-                      <option key={index} value={subject} className="bg-navy text-ivory">
-                        {subject}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-navy mr-3"></div>
+                        Sending Message...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-5 h-5 mr-3" />
+                        Send Message
+                      </>
+                    )}
+                  </button>
+                </form>
 
-                <div className="relative">
-                  <label htmlFor="message" className="block text-sm font-medium text-ivory/80 mb-2">
-                    Message *
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    onFocus={() => setActiveInput("message")}
-                    onBlur={() => setActiveInput(null)}
-                    required
-                    rows={6}
-                    className={`w-full px-4 py-4 bg-white/10 border rounded-xl text-ivory placeholder-ivory/50 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent resize-none transition-all duration-300 ${activeInput === "message" ? "border-gold scale-105" : "border-gold/30"}`}
-                    placeholder="Tell us how we can help you..."
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-gold to-yellow-400 text-navy py-4 rounded-xl font-semibold hover:from-yellow-400 hover:to-gold transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-navy mr-3"></div>
-                      Sending Message...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-5 h-5 mr-3" />
-                      Send Message
-                    </>
-                  )}
-                </button>
-              </form>
-
-              {/* Quick Contact */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-gold/20">
-                <h3 className="text-xl font-serif text-ivory mb-4">Prefer Direct Contact?</h3>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <a
-                    href="tel:+97712345678"
-                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-xl hover:from-emerald-500 hover:to-green-500 transition-all duration-300 transform hover:scale-105"
-                  >
-                    <Phone className="w-4 h-4" />
-                    Call Now
-                  </a>
-                  <a
-                    href="mailto:suman.soundjourneynepal@gmail.com" // Updated email address
-                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-pink-500 hover:to-purple-500 transition-all duration-300 transform hover:scale-105"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Email Us
-                  </a>
+                {/* Quick Contact */}
+                <div className="mt-8 pt-8 border-t border-gold/20">
+                  <h3 className="text-xl font-serif text-ivory mb-4">Prefer Direct Contact?</h3>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <a
+                      href="tel:+977"
+                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-xl hover:from-emerald-500 hover:to-green-500 transition-all duration-300 transform hover:scale-105"
+                    >
+                      <Phone className="w-4 h-4" />
+                      Call Now
+                    </a>
+                    <a
+                      href="mailto:info@trinitywaterproofing.com"
+                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-pink-500 hover:to-purple-500 transition-all duration-300 transform hover:scale-105"
+                    >
+                      <Mail className="w-4 h-4" />
+                      Email Us
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Map & Additional Info */}
             <div className="space-y-8">
-              {/* Interactive Map */}
+              {/* Office Location */}
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-gold/20 hover:border-gold/40 transition-all duration-300">
                 <div className="text-center">
                   <div className="relative mb-6">
@@ -484,14 +474,14 @@ const ContactPage = () => {
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-r from-gold/20 to-yellow-300/20 rounded-full animate-ping"></div>
                   </div>
-                  <h3 className="text-2xl font-serif text-ivory mb-4">Our Workshop Location</h3>
+                  <h3 className="text-2xl font-serif text-ivory mb-4">Our Location</h3>
                   <div className="space-y-2 mb-6">
-                    <p className="text-ivory/90 font-medium">Peace Love & Art Community</p>
-                    <p className="text-ivory/80">Sanepa, Lalitpur</p>
-                    <p className="text-ivory/80">Kathmandu Valley, Nepal</p>
+                    <p className="text-ivory/90 font-medium">Trinity Waterproofing</p>
+                    <p className="text-ivory/80">Kathmandu, Nepal</p>
+                    <p className="text-ivory/80">Central Nepal Region</p>
                   </div>
                   <a
-                    href="https://www.google.com/maps/place/Peace+Love+%26+Art+Community/@27.6805106,85.2994419,17z/data=!4m14!1m7!3m6!1s0x39eb19004c6db23f:0xf8bd651a8bf58139!2sPeace+Love+%26+Art+Community!8m2!3d27.6805059!4d85.3040553!16s%2Fg%2F11xgq1gfb8!3m5!1s0x39eb19004c6db23f:0xf8bd651a8bf58139!8m2!3d27.6805059!4d85.3040553!16s%2Fg%2F11xgq1gfb8?entry=ttu&g_ep=EgoyMDI1MDcwOS4wIKXMDSoASAFQAw%3D%3D"
+                    href="https://www.google.com/maps"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-8 py-4 rounded-xl hover:from-cyan-500 hover:to-blue-500 transition-all duration-300 transform hover:scale-105 shadow-lg"
@@ -507,7 +497,7 @@ const ContactPage = () => {
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-gold/20">
                 <h3 className="text-2xl font-serif text-ivory mb-4">Connect With Us</h3>
                 <p className="text-ivory/70 mb-6">
-                  Follow our journey and see behind-the-scenes content from our workshop
+                  Follow Trinity Waterproofing for project updates and industry insights
                 </p>
                 <div className="flex gap-4">
                   {socialLinks.map((social, index) => (
@@ -525,7 +515,7 @@ const ContactPage = () => {
 
               {/* Quick Help */}
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-gold/20">
-                <h3 className="text-2xl font-serif text-ivory mb-6">Quick Help</h3>
+                <h3 className="text-2xl font-serif text-ivory mb-6">Quick Links</h3>
                 <div className="space-y-4">
                   {quickHelp.map((help, index) => (
                     <a
@@ -554,11 +544,11 @@ const ContactPage = () => {
         }}
         className="py-20 bg-gradient-to-br from-gold/10 via-yellow-50 to-orange-50 relative"
       >
-        <div className="container-custom">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-5xl font-serif text-navy mb-8">Stay Connected</h2>
+            <h2 className="text-5xl font-serif text-navy mb-8">Stay Informed</h2>
             <p className="text-xl text-gray-700 mb-12 leading-relaxed">
-              Subscribe to our newsletter for updates on new products, sound healing tips, and exclusive offers.
+              Subscribe to our newsletter for waterproofing tips, maintenance advice, and exclusive offers on our services.
             </p>
 
             <div className="bg-white rounded-2xl p-8 shadow-lg max-w-2xl mx-auto">
@@ -572,7 +562,7 @@ const ContactPage = () => {
                   type="submit"
                   className="bg-gradient-to-r from-gold to-yellow-400 text-navy px-8 py-4 rounded-xl font-semibold hover:from-yellow-400 hover:to-gold transition-all duration-300 transform hover:scale-105 shadow-lg whitespace-nowrap"
                 >
-                  Subscribe Now
+                  Subscribe
                 </button>
               </form>
               <div className="flex items-center justify-center gap-2 mt-4">

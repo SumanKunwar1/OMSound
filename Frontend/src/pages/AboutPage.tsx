@@ -313,7 +313,7 @@ const AboutPage = () => {
                 detail: "Open Mon-Fri, 9am-5pm",
               },
               { icon: Mail, title: "Email Us", info: "info@trinitywaterproofing.com", detail: "Response within 24 hours" },
-              { icon: Phone, title: "Call Us", info: "+977 1-XXXX-XXXX", detail: "Available 9am-5pm (GMT+5:45)" },
+              { icon: Phone, title: "Call Us", info: "+977 985-1042257", detail: "Available 9am-5pm (GMT+5:45)" },
             ].map((contact, index) => (
               <div
                 key={index}
