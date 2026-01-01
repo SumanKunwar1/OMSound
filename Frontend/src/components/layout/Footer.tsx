@@ -22,8 +22,7 @@ const Footer = () => {
               <span className="text-2xl font-bold text-gold-500 font-serif">OMSound</span>
             </div>
             <p className="text-gray-400 text-sm mb-6">
-              Handcrafted in the heart of the Himalayas, our sound bowls blend ancient wisdom with modern craftsmanship 
-              to bring harmony and healing to your space.
+              Engineered in the heart of Nepal, our waterproofing solutions combine proven expertise with modern technology to safeguard your spaces against water and moisture.
             </p>
 
             {/* Newsletter Subscription */}
@@ -61,7 +60,7 @@ const Footer = () => {
                   className="text-gray-400 hover:text-gold-400 flex items-center transition-colors"
                 >
                   <ChevronRight className="h-4 w-4 mr-2 text-gold-500" />
-                  About OMSound
+                  About Trinity
                 </Link>
               </li>
               <li>
@@ -113,7 +112,7 @@ const Footer = () => {
                   className="text-gray-400 hover:text-gold-400 flex items-center transition-colors"
                 >
                   <ChevronRight className="h-4 w-4 mr-2 text-gold-500" />
-                  Sound Bowl Care Guide
+                  Waterproofing Care Guide
                 </Link>
               </li>
               <li>
@@ -152,15 +151,15 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-center text-gray-400">
                 <Mail className="h-5 w-5 mr-2 text-gold-500" />
-                <span>info@omsound.com</span>
+                <span>info@trinitywaterproofing.com.np</span>
               </li>
               <li className="flex items-center text-gray-400">
                 <Phone className="h-5 w-5 mr-2 text-gold-500" />
-                <span>+977 1234567890</span>
+                <span>+977 985-1042257</span>
               </li>
               <li className="flex items-center text-gray-400">
                 <MapPin className="h-5 w-5 mr-2 text-gold-500" />
-                <span>Kathmandu, Nepal</span>
+                <span>Maharajgunj, Kathmandu</span>
               </li>
             </ul>
 
@@ -205,10 +204,10 @@ const Footer = () => {
         <div className="border-t border-navy-600 mt-12 pt-8">
           <div className="flex flex-col items-center">
             <p className="text-gray-400 font-serif italic mb-2">
-              Crafted in the Heart of the Himalayas
+              "Protecting what matters most, one drop at a time."
             </p>
             <p className="text-gray-500 text-sm">
-              © {currentYear} OMSound Nepal. All rights reserved.
+              © {currentYear} Trinity Waterproofing. All rights reserved.
             </p>
           </div>
         </div>
