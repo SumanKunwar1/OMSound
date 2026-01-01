@@ -388,10 +388,14 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select Category</option>
-                    <option value="Traditional">Traditional</option>
-                    <option value="Premium">Premium</option>
-                    <option value="Professional">Professional</option>
-                    <option value="Luxury">Luxury</option>
+<option value="Water Proofing Coating">Water Proofing Coating</option>
+<option value="Membrane Water Proofing">Membrane Water Proofing</option>
+<option value="Repair Products">Repair Products</option>
+<option value="Epoxy Products">Epoxy Products</option>
+<option value="Structure Strengthening & Retrofitting">Structure Strengthening & Retrofitting</option>
+<option value="Cleaning Products">Cleaning Products</option>
+<option value="Furniture Fittings">Furniture Fittings</option>
+
                   </select>
                 </div>
 
