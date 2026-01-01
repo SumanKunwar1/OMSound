@@ -59,11 +59,11 @@ const FeaturedProducts = () => {
       <div className="container mx-auto px-4">
         <motion.div variants={containerVariants} initial="hidden" animate={isInView ? "visible" : "hidden"}>
           <motion.h2 variants={itemVariants} className="section-title text-gold text-center text-3xl font-bold mb-4">
-            Featured Singing Bowls
+            Featured Products
           </motion.h2>
 
           <motion.p variants={itemVariants} className="section-subtitle text-ivory/80 text-center text-lg mb-12">
-            Discover our most sought-after handcrafted pieces
+            Experience our most trusted waterproofing solutions
           </motion.p>
 
           {isLoading ? (
@@ -87,7 +87,7 @@ const FeaturedProducts = () => {
               to="/shop"
               className="btn-primary inline-flex items-center justify-center px-6 py-3 rounded-md font-medium bg-gold text-charcoal hover:bg-opacity-90 transition-colors"
             >
-              View All Singing Bowls
+              View All Products
             </Link>
           </motion.div>
         </motion.div>

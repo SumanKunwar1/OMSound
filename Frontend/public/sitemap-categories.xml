@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <!-- Traditional Category -->
+  <url>
+    <loc>https://omsounds.com/category/traditional</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Premium Category -->
+  <url>
+    <loc>https://omsounds.com/category/premium</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Professional Category -->
+  <url>
+    <loc>https://omsounds.com/category/professional</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Luxury Category -->
+  <url>
+    <loc>https://omsounds.com/category/luxury</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Sound Healing Category -->
+  <url>
+    <loc>https://omsounds.com/category/sound-healing</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+</urlset>

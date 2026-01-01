@@ -23,7 +23,6 @@ import CheckoutPage from "./pages/CheckoutPage"
 import OrderConfirmationPage from "./pages/OrderConfirmationPage"
 
 //footer
-
 import BlogPage from "./pages/footer/Blog"
 import CareersPage from "./pages/footer/career"
 import FAQPage from "./pages/footer/Faq"
@@ -104,13 +103,14 @@ const App: React.FC = () => {
                               <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
 
                               <Route path="/blog" element={<BlogPage />} />
+                              <Route path="/blog/:slug" element={<BlogPage />} />
                               <Route path="/careers" element={<CareersPage />} />
-                              <Route path="/faq" element={< FAQPage/>} />
+                              <Route path="/faq" element={<FAQPage />} />
                               <Route path="/press" element={<PressMediaPage />} />
                               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-                              <Route path="/shipping" element={< ShippingPolicyPage />} />
-                              <Route path="/care-guide" element={< SoundBowlCareGuidePage />} />
-                              <Route path="/support" element={< SupportCenterPage />} />
+                              <Route path="/shipping" element={<ShippingPolicyPage />} />
+                              <Route path="/care-guide" element={<SoundBowlCareGuidePage />} />
+                              <Route path="/support" element={<SupportCenterPage />} />
                             </Routes>
                           </main>
                           <Footer />

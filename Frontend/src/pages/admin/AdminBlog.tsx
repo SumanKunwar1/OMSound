@@ -1,13 +1,37 @@
-import React, { useState } from 'react';
-import { Plus, Calendar, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Calendar, User, Upload } from 'lucide-react';
 import DataTable from '../../components/admin/DataTable';
 import RichTextEditor from '../../components/admin/RichTextEditor';
-import { mockBlogPosts, BlogPost } from '../../data/adminData';
 import { useAdminAuth } from '../../context/AdminAuthContext';
+
+interface BlogPost {
+  _id?: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string;
+  featuredImage?: string;
+  author: string;
+  category: string;
+  tags: string[];
+  status: 'draft' | 'published' | 'archived';
+  seo?: {
+    title?: string;
+    description?: string;
+    keywords?: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 const AdminBlog = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [featuredImageFile, setFeaturedImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [formData, setFormData] = useState<Partial<BlogPost>>({
     title: '',
     slug: '',
@@ -26,13 +50,38 @@ const AdminBlog = () => {
   });
   const { hasPermission, adminUser } = useAdminAuth();
 
+  // Fetch blogs from API
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  const fetchBlogs = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/blogs');
+      if (response.ok) {
+        const data = await response.json();
+        setBlogs(data.data || []);
+      } else {
+        console.error('Failed to fetch blogs');
+        // If API fails, set empty array to avoid crashes
+        setBlogs([]);
+      }
+    } catch (error) {
+      console.error('Error fetching blogs:', error);
+      setBlogs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const columns = [
     {
       key: 'featuredImage',
       label: 'Image',
       render: (image: string) => (
         <img 
-          src={image} 
+          src={image || '/api/placeholder/48/48'} 
           alt="Featured" 
           className="w-12 h-12 object-cover rounded"
         />
@@ -55,22 +104,39 @@ const AdminBlog = () => {
       )
     },
     { 
-      key: 'publishedAt', 
-      label: 'Published',
+      key: 'createdAt', 
+      label: 'Created',
       render: (date: string) => date ? new Date(date).toLocaleDateString() : '-'
     }
   ];
 
   const handleEdit = (post: BlogPost) => {
     setEditingPost(post);
-    setFormData(post);
+    setFormData({
+      ...post,
+      tags: post.tags || []
+    });
+    setImagePreview(post.featuredImage || '');
     setShowModal(true);
   };
 
-  const handleDelete = (post: BlogPost) => {
+  const handleDelete = async (post: BlogPost) => {
     if (confirm(`Are you sure you want to delete "${post.title}"?`)) {
-      console.log('Deleting post:', post.id);
-      alert('Blog post deleted successfully');
+      try {
+        const response = await fetch(`/api/blogs/${post._id}`, {
+          method: 'DELETE',
+        });
+        
+        if (response.ok) {
+          alert('Blog post deleted successfully');
+          fetchBlogs(); // Refresh the list
+        } else {
+          alert('Failed to delete blog post');
+        }
+      } catch (error) {
+        console.error('Error deleting blog:', error);
+        alert('Error deleting blog post');
+      }
     }
   };
 
@@ -78,26 +144,79 @@ const AdminBlog = () => {
     window.open(`/blog/${post.slug}`, '_blank');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const postData = {
-      ...formData,
-      author: formData.author || `${adminUser?.firstName} ${adminUser?.lastName}`,
-      slug: formData.slug || formData.title?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
-      updatedAt: new Date().toISOString().split('T')[0]
-    };
-
-    if (editingPost) {
-      console.log('Updating post:', editingPost.id, postData);
-      alert('Blog post updated successfully');
-    } else {
-      console.log('Creating new post:', postData);
-      alert('Blog post created successfully');
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFeaturedImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-    
-    setShowModal(false);
-    setEditingPost(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      const submitFormData = new FormData();
+      
+      // Add all form fields
+      submitFormData.append('title', formData.title || '');
+      submitFormData.append('content', formData.content || '');
+      submitFormData.append('excerpt', formData.excerpt || '');
+      submitFormData.append('category', formData.category || '');
+      submitFormData.append('tags', (formData.tags || []).join(','));
+      submitFormData.append('status', formData.status || 'draft');
+      submitFormData.append('author', formData.author || `${adminUser?.firstName} ${adminUser?.lastName}`);
+      
+      if (formData.seo) {
+        submitFormData.append('seo', JSON.stringify(formData.seo));
+      }
+
+      // Add featured image if selected
+      if (featuredImageFile) {
+        submitFormData.append('featuredImage', featuredImageFile);
+      } else if (editingPost && formData.featuredImage) {
+        submitFormData.append('existingFeaturedImage', formData.featuredImage);
+      }
+
+      let response;
+      if (editingPost) {
+        // Update existing post
+        response = await fetch(`/api/blogs/${editingPost._id}`, {
+          method: 'PUT',
+          body: submitFormData,
+        });
+      } else {
+        // Create new post
+        response = await fetch('/api/blogs', {
+          method: 'POST',
+          body: submitFormData,
+        });
+      }
+
+      if (response.ok) {
+        alert(editingPost ? 'Blog post updated successfully' : 'Blog post created successfully');
+        setShowModal(false);
+        setEditingPost(null);
+        resetForm();
+        fetchBlogs(); // Refresh the list
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to save blog post');
+      }
+    } catch (error) {
+      console.error('Error saving blog:', error);
+      alert('Error saving blog post');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
     setFormData({
       title: '',
       slug: '',
@@ -114,6 +233,8 @@ const AdminBlog = () => {
         keywords: ''
       }
     });
+    setFeaturedImageFile(null);
+    setImagePreview('');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -146,6 +267,14 @@ const AdminBlog = () => {
     }));
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gold"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -156,7 +285,10 @@ const AdminBlog = () => {
         </div>
         {hasPermission('blog.write') && (
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              resetForm();
+              setShowModal(true);
+            }}
             className="flex items-center px-4 py-2 bg-gold text-white rounded-md hover:bg-gold/90"
           >
             <Plus size={16} className="mr-2" />
@@ -167,7 +299,7 @@ const AdminBlog = () => {
 
       {/* Blog Posts Table */}
       <DataTable
-        data={mockBlogPosts}
+        data={blogs}
         columns={columns}
         onEdit={hasPermission('blog.write') ? handleEdit : undefined}
         onDelete={hasPermission('blog.delete') ? handleDelete : undefined}
@@ -355,29 +487,30 @@ const AdminBlog = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Featured Image URL
+                      Featured Image *
                     </label>
-                    <input
-                      type="url"
-                      name="featuredImage"
-                      value={formData.featuredImage || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
-                    />
-                    {formData.featuredImage && (
-                      <img 
-                        src={formData.featuredImage} 
-                        alt="Preview" 
-                        className="mt-2 w-full h-32 object-cover rounded"
+                    <div className="space-y-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
                       />
-                    )}
+                      {imagePreview && (
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          className="w-full h-32 object-cover rounded"
+                        />
+                      )}
+                    </div>
                   </div>
 
                   {editingPost && (
                     <div className="text-sm text-gray-500 space-y-1">
                       <div className="flex items-center">
                         <Calendar size={14} className="mr-1" />
-                        Created: {new Date(editingPost.createdAt).toLocaleDateString()}
+                        Created: {new Date(editingPost.createdAt || '').toLocaleDateString()}
                       </div>
                       <div className="flex items-center">
                         <User size={14} className="mr-1" />
@@ -394,14 +527,16 @@ const AdminBlog = () => {
                   type="button"
                   onClick={() => setShowModal(false)}
                   className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  disabled={submitting}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-gold text-white rounded-md hover:bg-gold/90"
+                  disabled={submitting}
+                  className="px-4 py-2 bg-gold text-white rounded-md hover:bg-gold/90 disabled:opacity-50"
                 >
-                  {editingPost ? 'Update Post' : 'Create Post'}
+                  {submitting ? 'Saving...' : (editingPost ? 'Update Post' : 'Create Post')}
                 </button>
               </div>
             </form>

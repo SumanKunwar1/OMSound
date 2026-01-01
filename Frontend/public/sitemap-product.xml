@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- Himalayan Harmony Bowl -->
+  <url>
+    <loc>https://omsounds.com/product/bowl-1</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/9609097/pexels-photo-9609097.jpeg</image:loc>
+      <image:title>Himalayan Harmony Bowl - Medium Singing Bowl</image:title>
+      <image:caption>Hand-hammered singing bowl with clear, high-pitched tone perfect for sound therapy</image:caption>
+    </image:image>
+  </url>
+  
+  <!-- Ancient Resonance Bowl -->
+  <url>
+    <loc>https://omsounds.com/product/bowl-2</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/6461458/pexels-photo-6461458.jpeg</image:loc>
+      <image:title>Ancient Resonance Bowl - Large Decorative Singing Bowl</image:title>
+      <image:caption>Large hand-crafted bowl with intricate designs and deep resonant tone</image:caption>
+    </image:image>
+  </url>
+  
+  <!-- Tranquility Mini Bowl -->
+  <url>
+    <loc>https://omsounds.com/product/bowl-3</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/4325478/pexels-photo-4325478.jpeg</image:loc>
+      <image:title>Tranquility Mini Bowl - Small Therapeutic Singing Bowl</image:title>
+      <image:caption>Compact singing bowl perfect for personal meditation and office use</image:caption>
+    </image:image>
+  </url>
+  
+  <!-- Mountain Echo Bowl -->
+  <url>
+    <loc>https://omsounds.com/product/bowl-4</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/16159472/pexels-photo-16159472.jpeg</image:loc>
+      <image:title>Mountain Echo Bowl - Professional Sound Bath Bowl</image:title>
+      <image:caption>Versatile bowl producing harmonious overtones for sound therapy</image:caption>
+    </image:image>
+  </url>
+  
+  <!-- Artisan's Masterpiece Bowl -->
+  <url>
+    <loc>https://omsounds.com/product/bowl-5</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/479451/pexels-photo-479451.jpeg</image:loc>
+      <image:title>Artisan's Masterpiece Bowl - Luxury Singing Bowl</image:title>
+      <image:caption>Museum-quality singing bowl with 24k gold accents and profound resonance</image:caption>
+    </image:image>
+  </url>
+  
+  <!-- Wellness Practitioner Set -->
+  <url>
+    <loc>https://omsounds.com/product/bowl-6</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/5603660/pexels-photo-5603660.jpeg</image:loc>
+      <image:title>Wellness Practitioner Set - Professional Sound Bath Set</image:title>
+      <image:caption>Three complementary bowls designed for professional sound therapy sessions</image:caption>
+    </image:image>
+  </url>
+  
+</urlset>

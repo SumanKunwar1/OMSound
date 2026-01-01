@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Main Pages Sitemap -->
+  <sitemap>
+    <loc>https://omsounds.com/sitemap-pages.xml</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- Products Sitemap -->
+  <sitemap>
+    <loc>https://omsounds.com/sitemap-products.xml</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- Blog Posts Sitemap -->
+  <sitemap>
+    <loc>https://omsounds.com/sitemap-blog.xml</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- Categories Sitemap -->
+  <sitemap>
+    <loc>https://omsounds.com/sitemap-categories.xml</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- Images Sitemap -->
+  <sitemap>
+    <loc>https://omsounds.com/sitemap-images.xml</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+  </sitemap>
+</sitemapindex>

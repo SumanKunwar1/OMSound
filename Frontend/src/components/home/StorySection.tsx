@@ -39,11 +39,11 @@ const StorySection = () => {
           className="max-w-4xl mx-auto text-center"
         >
           <motion.h2 variants={itemVariants} className="text-4xl md:text-6xl font-serif text-charcoal mb-6">
-            The OMSound Story
+            The Trinity Waterproofing Story
           </motion.h2>
 
           <motion.p variants={itemVariants} className="text-xl md:text-2xl text-charcoal/70 font-light">
-            A journey of craft, heritage, and healing that spans generations
+            A commitment to protection, durability, and excellence built on proven waterproofing expertise.
           </motion.p>
         </motion.div>
       </div>
@@ -63,7 +63,7 @@ const StorySection = () => {
                 <div className="relative h-full rounded-2xl overflow-hidden shadow-2xl">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent to-ivory/10 z-10"></div>
                   <img
-                    src="https://res.cloudinary.com/dei0ymk1p/image/upload/v1752235490/a-hand-hammered-bronze-singing-bowl-with_VJxo8W0HRy6DeW_tQhS34g_7S00IMavRD6yq3LLoqeC3Q_mobnyk.jpg"
+                    src="https://res.cloudinary.com/dihev9qxc/image/upload/v1767255187/a-cinematic-wide-angle-photograph-of-a-s_OGYDdWv1TVavm8RZbvV-Ag_CQNhXncoS-6h1RDWCqwemw_widjot.jpg"
                     alt="Artisan crafting a singing bowl"
                     className="w-full h-full object-cover object-center"
                   />
@@ -78,45 +78,46 @@ const StorySection = () => {
             >
               <div className="max-w-3xl">
                 <h3 className="text-3xl md:text-4xl font-serif text-charcoal mb-8 leading-tight">
-                  From Ancient Tradition to Modern Wellness
+                  From Proven Techniques to Modern Waterproofing Solutions
                 </h3>
 
                 <div className="space-y-6 text-lg md:text-xl leading-relaxed">
-                  <p className="text-justify text-charcoal/80">
-                    For over three decades, our family has preserved the ancient art of crafting traditional singing
-                    bowls in the Himalayan foothills of Nepal. Our artisans follow techniques passed down through
-                    generations, using the same seven-metal alloy that has been the foundation of singing bowl craft for
-                    centuries.
-                  </p>
+  <p className="text-justify text-charcoal/80">
+    At Trinity Waterproofing, we specialize in delivering reliable and high-performance waterproofing solutions designed
+    to protect residential, commercial, and industrial structures. Our expertise is built on proven techniques and
+    industry knowledge, ensuring effective protection against water intrusion and moisture-related damage.
+  </p>
 
-                  <p className="text-justify text-charcoal/80">
-                    What began as a small workshop has grown into a global mission to share the healing resonance of
-                    these remarkable instruments with the world. Each bowl requires over 30 hours of skilled handwork,
-                    from the initial casting to the final hand-hammering that gives each piece its unique voice.
-                  </p>
+  <p className="text-justify text-charcoal/80">
+    With a comprehensive range of premium-grade products—including waterproofing coatings, membrane systems, repair
+    materials, and epoxy solutions—we address everything from basement leak prevention to rooftop durability and
+    structural reinforcement. Each solution is carefully selected and applied to deliver long-lasting performance and
+    strength.
+  </p>
 
-                  <p className="text-justify text-charcoal/80">
-                    Today, OMSound Nepal bowls can be found in wellness centers, luxury spas, and private collections
-                    across 45 countries, bringing the natural healing properties of Himalayan resonance to modern
-                    lifestyles.
-                  </p>
-                </div>
+  <p className="text-justify text-charcoal/80">
+    Today, Trinity Waterproofing is trusted by homeowners, contractors, and businesses seeking dependable protection and
+    peace of mind. Driven by innovation, quality, and customer satisfaction, we remain committed to helping our clients
+    build and maintain structures that stand resilient against the elements.
+  </p>
+</div>
 
                 {/* Stats Section */}
-                <div className="mt-12 grid grid-cols-3 gap-8">
-                  <div className="text-center">
-                    <div className="text-gold text-3xl md:text-4xl font-serif font-bold mb-2">30+</div>
-                    <p className="text-charcoal/70 text-sm md:text-base">Years of craftsmanship</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-gold text-3xl md:text-4xl font-serif font-bold mb-2">45</div>
-                    <p className="text-charcoal/70 text-sm md:text-base">Countries worldwide</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-gold text-3xl md:text-4xl font-serif font-bold mb-2">100%</div>
-                    <p className="text-charcoal/70 text-sm md:text-base">Handmade in Nepal</p>
-                  </div>
-                </div>
+<div className="mt-12 grid grid-cols-3 gap-8">
+  <div className="text-center">
+    <div className="text-gold text-3xl md:text-4xl font-serif font-bold mb-2">20+</div>
+    <p className="text-charcoal/70 text-sm md:text-base">Years of Expertise</p>
+  </div>
+  <div className="text-center">
+    <div className="text-gold text-3xl md:text-4xl font-serif font-bold mb-2">500+</div>
+    <p className="text-charcoal/70 text-sm md:text-base">Projects Completed</p>
+  </div>
+  <div className="text-center">
+    <div className="text-gold text-3xl md:text-4xl font-serif font-bold mb-2">100%</div>
+    <p className="text-charcoal/70 text-sm md:text-base">Client Satisfaction</p>
+  </div>
+</div>
+
               </div>
             </motion.div>
           </div>

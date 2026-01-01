@@ -14,6 +14,7 @@ interface Column {
 interface DataTableProps {
   data: any[]
   columns: Column[]
+  loading?: boolean
   onEdit?: (item: any) => void
   onDelete?: (item: any) => void
   onView?: (item: any) => void
@@ -24,11 +25,11 @@ interface DataTableProps {
 const DataTable: React.FC<DataTableProps> = ({
   data,
   columns,
+  loading = false,
   onEdit,
   onDelete,
   onView,
   searchable = false,
-  filterable = false,
 }) => {
   const [searchTerm, setSearchTerm] = useState("")
   const [sortConfig, setSortConfig] = useState<{
@@ -89,6 +90,14 @@ const DataTable: React.FC<DataTableProps> = ({
   const getSortIcon = (key: string) => {
     if (sortConfig?.key !== key) return null
     return sortConfig.direction === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+      </div>
+    )
   }
 
   return (
@@ -235,7 +244,7 @@ const DataTable: React.FC<DataTableProps> = ({
         )}
       </div>
 
-      {filteredAndSortedData.length === 0 && (
+      {filteredAndSortedData.length === 0 && !loading && (
         <div className="text-center py-12">
           <p className="text-gray-500">No products found.</p>
         </div>

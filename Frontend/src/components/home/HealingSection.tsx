@@ -38,28 +38,28 @@ const HealingSection = () => {
 
   const benefits = [
     {
-      title: "Stress Reduction",
+      title: "Waterproofing Coatings",
       description:
-        "The sound vibrations from our singing bowls help activate the body's relaxation response, reducing cortisol levels and easing tension in both mind and body.",
-      icon: "https://images.pexels.com/photos/3094230/pexels-photo-3094230.jpeg",
+        "Waterproofing coatings offer reliable protection against water damage by creating a strong, moisture-resistant barrier. Ideal for roofs, walls, and foundations, they ensure long-lasting durability.",
+      icon: "https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg",
     },
     {
-      title: "Pain & Anxiety Relief",
+      title: "Membrane Waterproofing",
       description:
-        "Regular sessions with singing bowls have been shown to reduce physical pain and alleviate symptoms of anxiety by promoting deep states of relaxation.",
-      icon: "https://images.pexels.com/photos/7319163/pexels-photo-7319163.jpeg",
+        "Membrane waterproofing provides a flexible, seamless barrier that effectively protects surfaces from water penetration. Perfect for roofs, basements, and foundations, it ensures enhanced durability and moisture resistance.",
+      icon: "https://images.pexels.com/photos/3945630/pexels-photo-3945630.jpeg",
     },
     {
-      title: "Deep Sleep Support",
+      title: "Repair Products",
       description:
-        "The gentle tones create an ideal soundscape for falling into restful sleep, helping those with insomnia or disrupted sleep patterns find natural relief.",
-      icon: "https://images.pexels.com/photos/6963756/pexels-photo-6963756.jpeg",
+        "Repair products are designed to fix and restore damaged surfaces, offering quick and effective solutions for cracks, leaks, and wear. These products ensure long-lasting results and help maintain the integrity of structures.",
+      icon: "https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg",
     },
     {
-      title: "Meditation Enhancement",
+      title: "Epoxy Products",
       description:
-        "Singing bowls create a focal point for attention during meditation, helping both beginners and experienced practitioners achieve deeper states of mindfulness.",
-      icon: "https://images.pexels.com/photos/4325479/pexels-photo-4325479.jpeg",
+        "Epoxy products offer strong, durable solutions for bonding, coating, and repairing surfaces. Known for their resistance to wear, chemicals, and moisture, they are ideal for a wide range of applications in both commercial and industrial settings.",
+      icon: "https://images.pexels.com/photos/3962285/pexels-photo-3962285.jpeg",
     },
   ]
 
@@ -83,7 +83,7 @@ const HealingSection = () => {
           {/* Header Section */}
           <div className="text-center mb-20">
             <motion.h2 variants={itemVariants} className="text-5xl md:text-7xl font-serif text-gold mb-6 leading-tight">
-              Healing With Sound
+              Trinity Waterproofing Products
             </motion.h2>
 
             <motion.div variants={itemVariants} className="w-24 h-1 bg-gold mx-auto mb-8"></motion.div>
@@ -92,7 +92,7 @@ const HealingSection = () => {
               variants={itemVariants}
               className="text-xl md:text-2xl text-ivory/80 max-w-3xl mx-auto font-light leading-relaxed"
             >
-              Discover the scientifically-backed benefits of singing bowl therapy
+              Premium solutions for lasting protection against water damage
             </motion.p>
           </div>
 
@@ -145,31 +145,30 @@ const HealingSection = () => {
 
             <div className="text-center mb-12">
               <h3 className="text-4xl md:text-5xl font-serif text-gold mb-6 leading-tight">
-                The Science Behind Sound Healing
+                Why Choose Trinity Waterproofing
               </h3>
               <div className="w-16 h-1 bg-gold mx-auto mb-8"></div>
               <p className="text-ivory/80 mb-8 text-xl leading-relaxed max-w-4xl mx-auto">
-                Modern research has validated what traditional practices have known for centuries: the vibrations from
-                singing bowls have measurable effects on our physical and mental state.
+                With years of expertise and industry-leading products, Trinity Waterproofing delivers solutions that protect your investment for decades to come.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 {
-                  title: "Brainwave Entrainment",
+                  title: "Superior Quality",
                   description:
-                    "Studies show that singing bowl sounds can synchronize brain waves to alpha and theta states, associated with deep relaxation and meditation.",
+                    "Our products are engineered with cutting-edge technology to provide maximum protection and durability against water damage and environmental stress.",
                 },
                 {
-                  title: "Vibrational Therapy",
+                  title: "Expert Installation",
                   description:
-                    "The physical vibrations travel through tissue, stimulating cellular regeneration and promoting healing at a fundamental level.",
+                    "Trinity's certified professionals ensure proper application for optimal performance and longevity of your waterproofing systems.",
                 },
                 {
-                  title: "Autonomic Balance",
+                  title: "Long-Lasting Protection",
                   description:
-                    "Regular sound therapy helps restore balance to the autonomic nervous system, reducing fight-or-flight responses and promoting relaxation.",
+                    "Backed by industry warranties, our solutions offer decades of reliable protection, giving you peace of mind and protecting your property value.",
                 },
               ].map((item, index) => (
                 <motion.div
@@ -196,3 +195,4 @@ const HealingSection = () => {
 }
 
 export default HealingSection
+

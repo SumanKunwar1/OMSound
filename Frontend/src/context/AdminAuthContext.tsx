@@ -46,10 +46,10 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   const [token, setToken] = useState<string | null>(null)
   const navigate = useNavigate()
 
-  // Load user from localStorage on initial mount
+  // Load user from sessionStorage on initial mount
   useEffect(() => {
-    const storedUser = localStorage.getItem("adminUser")
-    const storedToken = localStorage.getItem("adminToken")
+    const storedUser = sessionStorage.getItem("adminUser")
+    const storedToken = sessionStorage.getItem("adminToken")
     if (storedUser && storedToken) {
       setAdminUser(JSON.parse(storedUser))
       setToken(storedToken)
@@ -86,8 +86,9 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
         const newToken = "dummy-admin-token-for-sammi"
         setToken(newToken)
 
-        localStorage.setItem("adminUser", JSON.stringify(mockAdminUser))
-        localStorage.setItem("adminToken", newToken)
+        // Store in sessionStorage instead of localStorage
+        sessionStorage.setItem("adminUser", JSON.stringify(mockAdminUser))
+        sessionStorage.setItem("adminToken", newToken)
 
         return true
       } else {
@@ -104,8 +105,9 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   const logout = () => {
     setAdminUser(null)
     setToken(null)
-    localStorage.removeItem("adminUser")
-    localStorage.removeItem("adminToken")
+    // Remove from sessionStorage
+    sessionStorage.removeItem("adminUser")
+    sessionStorage.removeItem("adminToken")
     navigate("/admin/login")
   }
 

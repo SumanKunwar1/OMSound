@@ -28,7 +28,6 @@ const HomePage = () => {
         <HealingSection />
         <FeaturedProducts />
         <CraftSection />
-        <TestimonialsSection />
         <ModernSection />
 
         {/* Free Shipping Banner */}

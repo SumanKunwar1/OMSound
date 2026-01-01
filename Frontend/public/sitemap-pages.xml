@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- Homepage -->
+  <url>
+    <loc>https://omsounds.com/</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/9609097/pexels-photo-9609097.jpeg</image:loc>
+      <image:title>Authentic Himalayan Singing Bowls</image:title>
+      <image:caption>Handcrafted singing bowls from Nepal for sound healing and meditation</image:caption>
+    </image:image>
+  </url>
+  
+  <!-- Shop Page -->
+  <url>
+    <loc>https://omsounds.com/shop</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/6461458/pexels-photo-6461458.jpeg</image:loc>
+      <image:title>Shop Himalayan Singing Bowls</image:title>
+      <image:caption>Browse our collection of authentic handcrafted singing bowls</image:caption>
+    </image:image>
+  </url>
+  
+  <!-- About Page -->
+  <url>
+    <loc>https://omsounds.com/about</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/7969331/pexels-photo-7969331.jpeg</image:loc>
+      <image:title>Our Story - Traditional Himalayan Craftsmanship</image:title>
+      <image:caption>Learn about our heritage and traditional singing bowl craftsmanship</image:caption>
+    </image:image>
+  </url>
+  
+  <!-- Sound Healing Page -->
+  <url>
+    <loc>https://omsounds.com/sound-healing</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/3094230/pexels-photo-3094230.jpeg</image:loc>
+      <image:title>Sound Healing Therapy Sessions</image:title>
+      <image:caption>Experience transformative sound healing with authentic Himalayan singing bowls</image:caption>
+    </image:image>
+  </url>
+  
+  <!-- Contact Page -->
+  <url>
+    <loc>https://omsounds.com/contact</loc>
+    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/5993553/pexels-photo-5993553.jpeg</image:loc>
+      <image:title>Contact OMSound Nepal</image:title>
+      <image:caption>Get in touch with us for inquiries about singing bowls and sound healing</image:caption>
+    </image:image>
+  </url>
+  
+</urlset>

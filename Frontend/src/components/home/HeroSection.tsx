@@ -26,7 +26,7 @@ const HeroSection = () => {
           loop 
           muted 
           playsInline
-          poster="https://res.cloudinary.com/dei0ymk1p/image/upload/v1752235489/Hero_Banner_h6auib.jpg"
+          poster="https://res.cloudinary.com/dihev9qxc/image/upload/v1767255187/a-cinematic-wide-angle-photograph-of-a-m_XchXWMdNSSGJaghx87BIdQ_5DpoUHy7S9KvP0rQVUk-Og_t8bhnj.jpg"
         >
           <source 
             src="https://player.vimeo.com/external/538378273.sd.mp4?s=49938555c1b3f8b28889064c052386843e4e75e9&profile_id=164&oauth2_token_id=57447761" 
@@ -45,7 +45,8 @@ const HeroSection = () => {
           className="max-w-3xl mx-auto"
         >
           <h1 className="text-ivory font-serif mb-6">
-            Crafted in Nepal.<br />Heard Around the World.
+            Built to Resist Water.
+<br />Engineered to Last.
           </h1>
           
           <motion.p 
@@ -54,7 +55,7 @@ const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="text-xl text-ivory/90 mb-10"
           >
-            Experience healing through sound, shaped by Himalayan tradition.
+            Premium waterproofing solutions for roofs, basements, walls, and structures—designed to protect, strengthen, and extend the life of your property.
           </motion.p>
           
           <motion.div 
@@ -64,7 +65,7 @@ const HeroSection = () => {
             className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center"
           >
             <Link to="/shop" className="btn-primary">
-              Shop Singing Bowls
+              View Products
             </Link>
             <Link to="/about" className="btn-outline">
               Our Story
