@@ -7,7 +7,7 @@ import HomePage from "./pages/HomePage"
 import ShopPage from "./pages/ShopPage"
 import ProductPage from "./pages/ProductPage"
 import AboutPage from "./pages/AboutPage"
-import SoundHealingPage from "./pages/SoundHealingPage"
+import ServicesPage from "./pages/Services"
 import ContactPage from "./pages/ContactPage"
 import LoginPage from "./pages/LoginPage"
 import SignUpPage from "./pages/SignUpPage"
@@ -93,7 +93,7 @@ const App: React.FC = () => {
                               <Route path="/shop" element={<ShopPage />} />
                               <Route path="/product/:id" element={<ProductPage />} />
                               <Route path="/about" element={<AboutPage />} />
-                              <Route path="/sound-healing" element={<SoundHealingPage />} />
+                              <Route path="/services" element={<ServicesPage />} />
                               <Route path="/contact" element={<ContactPage />} />
                               <Route path="/login" element={<LoginPage />} />
                               <Route path="/signup" element={<SignUpPage />} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, Menu, X } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
@@ -47,7 +47,7 @@ const Navbar = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center">
           <h1 className="text-2xl md:text-3xl font-serif font-bold text-gold transition-colors duration-300">
-            OMSound Nepal
+            Trinity Waterproofing
           </h1>
         </Link>
 
@@ -72,10 +72,10 @@ const Navbar = () => {
             Our Story
           </Link>
           <Link 
-            to="/sound-healing" 
+            to="/services" 
             className="font-medium text-ivory hover:text-gold transition-colors duration-300"
           >
-            Sound Healing
+            Services
           </Link>
           <Link 
             to="/contact" 
