@@ -2,10 +2,11 @@ import { Helmet } from "react-helmet-async"
 import type React from "react"
 
 interface SEOHelmetProps {
-  title: string
-  description: string
+  title?: string
+  description?: string
   keywords?: string | string[]
   image?: string
+  ogImage?: string
   type?: string
   structuredData?: object
   url?: string
@@ -16,7 +17,7 @@ interface SEOHelmetProps {
   noimageindex?: boolean
   notranslate?: boolean
   maxSnippet?: number
-  maxImagePreview?: 'none' | 'standard' | 'large'
+  maxImagePreview?: "none" | "standard" | "large"
   maxVideoPreview?: number
   twitterCard?: string
   twitterSite?: string
@@ -24,10 +25,11 @@ interface SEOHelmetProps {
 }
 
 const SEOHelmet: React.FC<SEOHelmetProps> = ({
-  title,
-  description,
+  title = "Trinity Waterproofing",
+  description = "Premium waterproofing solutions for residential and commercial properties in Nepal",
   keywords = "",
   image = "",
+  ogImage = "",
   type = "website",
   structuredData,
   url = "",
@@ -38,7 +40,7 @@ const SEOHelmet: React.FC<SEOHelmetProps> = ({
   noimageindex = false,
   notranslate = false,
   maxSnippet,
-  maxImagePreview = 'large',
+  maxImagePreview = "large",
   maxVideoPreview,
   twitterCard = "summary_large_image",
   twitterSite = "@trinitywaterproofing",
@@ -46,47 +48,52 @@ const SEOHelmet: React.FC<SEOHelmetProps> = ({
 }) => {
   const baseUrl = "https://www.trinitywaterproofing.com.np"
   const fullUrl = url && url !== "/" ? `${baseUrl}${url}` : baseUrl
-  const fullImageUrl = image ? (image.startsWith("http") ? image : `${baseUrl}${image}`) : "https://res.cloudinary.com/dihev9qxc/image/upload/v1767254272/logo_vfmrxy.png"
+  const imageToUse = ogImage || image
+  const fullImageUrl = imageToUse
+    ? imageToUse.startsWith("http")
+      ? imageToUse
+      : `${baseUrl}${imageToUse}`
+    : "https://res.cloudinary.com/dihev9qxc/image/upload/v1767254272/logo_vfmrxy.png"
 
   // Handle keywords as array or string
-  const keywordsString = Array.isArray(keywords) ? keywords.join(", ") : keywords
+  const keywordsString = Array.isArray(keywords) ? keywords.join(", ") : keywords || ""
 
   // Robots meta directives
   const robotsDirectives: string[] = []
-  if (noindex) robotsDirectives.push('noindex')
-  else robotsDirectives.push('index')
+  if (noindex) robotsDirectives.push("noindex")
+  else robotsDirectives.push("index")
 
-  if (nofollow) robotsDirectives.push('nofollow')
-  else robotsDirectives.push('follow')
+  if (nofollow) robotsDirectives.push("nofollow")
+  else robotsDirectives.push("follow")
 
-  if (noarchive) robotsDirectives.push('noarchive')
-  if (nosnippet) robotsDirectives.push('nosnippet')
-  if (noimageindex) robotsDirectives.push('noimageindex')
-  if (notranslate) robotsDirectives.push('notranslate')
+  if (noarchive) robotsDirectives.push("noarchive")
+  if (nosnippet) robotsDirectives.push("nosnippet")
+  if (noimageindex) robotsDirectives.push("noimageindex")
+  if (notranslate) robotsDirectives.push("notranslate")
 
   if (maxSnippet !== undefined) robotsDirectives.push(`max-snippet:${maxSnippet}`)
   if (maxImagePreview) robotsDirectives.push(`max-image-preview:${maxImagePreview}`)
   if (maxVideoPreview !== undefined) robotsDirectives.push(`max-video-preview:${maxVideoPreview}`)
 
-  const robotsContent = robotsDirectives.join(', ')
+  const robotsContent = robotsDirectives.join(", ")
 
   // Default structured data for Trinity Waterproofing
   const defaultStructuredData = structuredData || {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "name": "Trinity Waterproofing",
-    "image": "https://res.cloudinary.com/dihev9qxc/image/upload/v1767254272/logo_vfmrxy.png",
-    "description": "Premium waterproofing solutions for residential and commercial properties in Nepal",
-    "url": baseUrl,
-    "telephone": "+977-1-XXXX-XXXX",
-    "email": "info@trinitywaterproofing.com",
-    "address": {
+    name: "Trinity Waterproofing",
+    image: "https://res.cloudinary.com/dihev9qxc/image/upload/v1767254272/logo_vfmrxy.png",
+    description: "Premium waterproofing solutions for residential and commercial properties in Nepal",
+    url: baseUrl,
+    telephone: "+977-1-XXXX-XXXX",
+    email: "info@trinitywaterproofing.com",
+    address: {
       "@type": "PostalAddress",
-      "addressLocality": "Kathmandu",
-      "addressRegion": "Bagmati",
-      "postalCode": "44600",
-      "addressCountry": "NP"
-    }
+      addressLocality: "Kathmandu",
+      addressRegion: "Bagmati",
+      postalCode: "44600",
+      addressCountry: "NP",
+    },
   }
 
   return (
@@ -94,13 +101,13 @@ const SEOHelmet: React.FC<SEOHelmetProps> = ({
       {/* Page Title - THIS OVERRIDES index.html title */}
       <title>{title}</title>
       <meta name="title" content={title} />
-      
+
       {/* Meta Description */}
       <meta name="description" content={description} />
-      
+
       {/* Keywords */}
       {keywordsString && <meta name="keywords" content={keywordsString} />}
-      
+
       {/* Robots Meta Tags */}
       <meta name="robots" content={robotsContent} />
       <meta name="googlebot" content={robotsContent} />
@@ -127,9 +134,7 @@ const SEOHelmet: React.FC<SEOHelmetProps> = ({
       {twitterCreator && <meta name="twitter:creator" content={twitterCreator} />}
 
       {/* Structured data */}
-      <script type="application/ld+json">
-        {JSON.stringify(defaultStructuredData)}
-      </script>
+      <script type="application/ld+json">{JSON.stringify(defaultStructuredData)}</script>
     </Helmet>
   )
 }

@@ -16,15 +16,16 @@ interface FormState {
   id: string
   name: string
   price: number
-  size: string
-  tone: string
+  coverage: string
   type: string
-  musicalNote: string
+  application: string
+  waterproofingRating: string
+  durationYears: number
   brand: string
   category: string
   description: string
   details: string[]
-  careInstructions: string[]
+  applicationInstructions: string[]
   inStock: boolean
   rating: number
   reviewCount: number
@@ -45,15 +46,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
     id: "",
     name: "",
     price: 0,
-    size: "",
-    tone: "",
+    coverage: "",
     type: "",
-    musicalNote: "",
-    brand: "OMSound Nepal",
+    application: "",
+    waterproofingRating: "",
+    durationYears: 0,
+    brand: "Trinity Waterproofing",
     category: "",
     description: "",
-    details: [""],
-    careInstructions: [""],
+    details: ["", "", ""],
+    applicationInstructions: ["", "", ""],
     inStock: true,
     rating: 0,
     reviewCount: 0,
@@ -70,15 +72,17 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
         id: product.id || "",
         name: product.name || "",
         price: product.price || 0,
-        size: product.size || "",
-        tone: product.tone || "",
+        coverage: (product as any).coverage || "",
         type: product.type || "",
-        musicalNote: product.musicalNote || "",
-        brand: product.brand || "OMSound Nepal",
+        application: (product as any).application || "",
+        waterproofingRating: (product as any).waterproofingRating || "",
+        durationYears: (product as any).durationYears || 0,
+        brand: product.brand || "Trinity Waterproofing",
         category: product.category || "",
         description: product.description || "",
-        details: product.details?.length ? product.details : [""],
-        careInstructions: product.careInstructions?.length ? product.careInstructions : [""],
+        details: product.details?.length ? product.details : ["", "", ""],
+        applicationInstructions:
+          (product as any).applicationInstructions?.length ? (product as any).applicationInstructions : ["", "", ""],
         inStock: product.inStock ?? true,
         rating: product.rating || 0,
         reviewCount: product.reviewCount || 0,
@@ -93,7 +97,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
       // Generate unique ID for new products
       setFormData((prev) => ({
         ...prev,
-        id: `bowl-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: `WP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       }))
     }
   }, [product])
@@ -111,21 +115,25 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
     }))
   }
 
-  const handleArrayChange = (field: "details" | "careInstructions", index: number, value: string) => {
+  const handleArrayChange = (
+    field: "details" | "applicationInstructions",
+    index: number,
+    value: string,
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: prev[field].map((item, i) => (i === index ? value : item)),
     }))
   }
 
-  const addArrayItem = (field: "details" | "careInstructions") => {
+  const addArrayItem = (field: "details" | "applicationInstructions") => {
     setFormData((prev) => ({
       ...prev,
       [field]: [...prev[field], ""],
     }))
   }
 
-  const removeArrayItem = (field: "details" | "careInstructions", index: number) => {
+  const removeArrayItem = (field: "details" | "applicationInstructions", index: number) => {
     setFormData((prev) => ({
       ...prev,
       [field]: prev[field].filter((_, i) => i !== index),
@@ -173,10 +181,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
       !formData.name ||
       !formData.price ||
       !formData.category ||
-      !formData.size ||
-      !formData.tone ||
+      !formData.coverage ||
       !formData.type ||
-      !formData.musicalNote ||
+      !formData.application ||
+      !formData.waterproofingRating ||
+      !formData.durationYears ||
       !formData.description
     ) {
       alert("Please fill all required fields")
@@ -193,14 +202,15 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
 
       const submitData = new FormData()
 
-      // Add basic fields with validation
+      // Add basic fields
       submitData.append("id", formData.id.trim())
       submitData.append("name", formData.name.trim())
       submitData.append("price", formData.price.toString())
-      submitData.append("size", formData.size.trim())
-      submitData.append("tone", formData.tone.trim())
+      submitData.append("coverage", formData.coverage.trim())
       submitData.append("type", formData.type.trim())
-      submitData.append("musicalNote", formData.musicalNote.trim())
+      submitData.append("application", formData.application.trim())
+      submitData.append("waterproofingRating", formData.waterproofingRating.trim())
+      submitData.append("durationYears", formData.durationYears.toString())
       submitData.append("brand", formData.brand.trim())
       submitData.append("category", formData.category.trim())
       submitData.append("description", formData.description.trim())
@@ -213,128 +223,96 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
       submitData.append("video", formData.video.trim())
       submitData.append("audio", formData.audio.trim())
 
-      setUploadProgress(30)
-
-      // Add arrays - ensure they're not empty
-      const filteredDetails = formData.details.filter((item) => item.trim() !== "")
-      if (filteredDetails.length > 0) {
-        filteredDetails.forEach((detail) => {
+      // Add details
+      formData.details.forEach((detail) => {
+        if (detail.trim()) {
           submitData.append("details", detail.trim())
-        })
-      } else {
-        // Add at least one empty detail to avoid validation issues
-        submitData.append("details", "Handcrafted singing bowl")
-      }
-
-      const filteredInstructions = formData.careInstructions.filter((item) => item.trim() !== "")
-      if (filteredInstructions.length > 0) {
-        filteredInstructions.forEach((instruction) => {
-          submitData.append("careInstructions", instruction.trim())
-        })
-      } else {
-        // Add default care instruction
-        submitData.append("careInstructions", "Clean with soft cloth")
-      }
-
-      // Add existing images
-      existingImages.forEach((image) => {
-        submitData.append("existingImages", image)
+        }
       })
 
-      setUploadProgress(50)
+      // Add application instructions
+      formData.applicationInstructions.forEach((instruction) => {
+        if (instruction.trim()) {
+          submitData.append("applicationInstructions", instruction.trim())
+        }
+      })
 
-      // Add new image files
+      // Add new images
       imageFiles.forEach((file) => {
         submitData.append("images", file)
       })
 
-      setUploadProgress(70)
+      // Add existing images
+      existingImages.forEach((imageUrl) => {
+        submitData.append("existingImages", imageUrl)
+      })
 
-      // Add video file
+      // Add video file if exists
       if (videoFile) {
         submitData.append("video", videoFile)
       }
 
-      setUploadProgress(90)
+      setUploadProgress(50)
 
-      console.log("FormData contents:")
-      for (const [key, value] of submitData.entries()) {
-        console.log(key, value)
-      }
-
+      console.log("FormData ready for submission")
       await onSubmit(submitData)
 
       setUploadProgress(100)
-
-      // Reset form
       setImageFiles([])
       setVideoFile(null)
-      setExistingImages([])
-      setUploadProgress(0)
 
-      console.log("=== FORM SUBMIT SUCCESS ===")
+      setTimeout(() => setUploadProgress(0), 1000)
     } catch (error) {
+      console.error("Submit error:", error)
+      alert(`Error: ${error instanceof Error ? error.message : "Failed to submit"}`)
       setUploadProgress(0)
-      console.error("Form submission error:", error)
-      console.log("=== FORM SUBMIT ERROR ===")
     }
   }
 
-  const generateSEOSuggestions = () => {
-    if (!formData.name) return []
-
-    const suggestions = [
-      `${formData.name.toLowerCase()}`,
-      `${formData.name.toLowerCase()} singing bowl`,
-      `buy ${formData.name.toLowerCase()}`,
-      "himalayan singing bowl",
-      "sound healing bowl",
-      "meditation bowl",
-      "tibetan bowl",
-      "nepal singing bowl",
-    ]
-
-    if (formData.size) suggestions.push(`${formData.size.toLowerCase()} singing bowl`)
-    if (formData.tone) suggestions.push(`${formData.tone.toLowerCase()} tone bowl`)
-
-    return suggestions
-  }
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">{product ? "Edit Product" : "Add New Product"}</h2>
-            <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
-              <X size={24} />
-            </button>
-          </div>
-
-          <div className="flex border-b border-gray-200 mt-4">
-            <button
-              onClick={() => setActiveTab("product")}
-              className={`px-4 py-2 font-medium ${
-                activeTab === "product" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"
-              }`}
-            >
-              Product Details
-            </button>
-            <button
-              onClick={() => setActiveTab("seo")}
-              className={`px-4 py-2 font-medium ${
-                activeTab === "seo" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"
-              }`}
-            >
-              SEO & Marketing
-            </button>
-          </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl my-8">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900">{product ? "Edit Product" : "Add New Product"}</h2>
+          <button
+            onClick={onCancel}
+            disabled={loading}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X size={24} />
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6">
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 px-6 pt-4">
+          <button
+            type="button"
+            onClick={() => setActiveTab("product")}
+            className={`pb-4 px-4 font-medium ${
+              activeTab === "product"
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Product Details
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("seo")}
+            className={`pb-4 px-4 font-medium ${
+              activeTab === "seo" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            SEO
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {activeTab === "product" ? (
             <div className="space-y-6">
-              {/* Product ID Field */}
+              {/* Product ID */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Product ID *</label>
                 <input
@@ -342,16 +320,14 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
                   name="id"
                   value={formData.id}
                   onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., bowl-himalayan-harmony-001"
+                  placeholder="e.g., WP-001"
+                  disabled={!!product}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Unique identifier for this product (used in URLs and database)
-                </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Name and Price */}
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
                   <input
@@ -359,216 +335,228 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    required
+                    placeholder="e.g., Roof Waterproofing Liquid"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Price (USD) *</label>
                   <input
                     type="number"
                     name="price"
                     value={formData.price}
                     onChange={handleInputChange}
-                    required
-                    min="0"
+                    placeholder="0.00"
                     step="0.01"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+              </div>
 
+              {/* Coverage and Type */}
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                  <select
-                    name="category"
-                    value={formData.category}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Coverage Area *</label>
+                  <input
+                    type="text"
+                    name="coverage"
+                    value={formData.coverage}
                     onChange={handleInputChange}
-                    required
+                    placeholder="e.g., 250 sq ft"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Category</option>
-<option value="Water Proofing Coating">Water Proofing Coating</option>
-<option value="Membrane Water Proofing">Membrane Water Proofing</option>
-<option value="Repair Products">Repair Products</option>
-<option value="Epoxy Products">Epoxy Products</option>
-<option value="Structure Strengthening & Retrofitting">Structure Strengthening & Retrofitting</option>
-<option value="Cleaning Products">Cleaning Products</option>
-<option value="Furniture Fittings">Furniture Fittings</option>
-
-                  </select>
+                  />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Size *</label>
-                  <select
-                    name="size"
-                    value={formData.size}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Size</option>
-                    <option value="Small">Small</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Large">Large</option>
-                    <option value="Various">Various</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tone *</label>
-                  <select
-                    name="tone"
-                    value={formData.tone}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Tone</option>
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                    <option value="Full Range">Full Range</option>
-                  </select>
-                </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Type *</label>
                   <select
                     name="type"
                     value={formData.type}
                     onChange={handleInputChange}
-                    required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select Type</option>
-                    <option value="Therapeutic">Therapeutic</option>
-                    <option value="Decorative">Decorative</option>
-                    <option value="Sound Bath">Sound Bath</option>
+                    <option value="Liquid Membrane">Liquid Membrane</option>
+                    <option value="Sheet Membrane">Sheet Membrane</option>
+                    <option value="Paint Coating">Paint Coating</option>
+                    <option value="Spray Foam">Spray Foam</option>
+                    <option value="Sealant">Sealant</option>
                   </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Musical Note *</label>
-                  <input
-                    type="text"
-                    name="musicalNote"
-                    value={formData.musicalNote}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="e.g., F4, C3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                  <input
-                    type="text"
-                    name="brand"
-                    value={formData.brand}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
                 </div>
               </div>
 
+              {/* Application and Rating */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Application *</label>
+                  <select
+                    name="application"
+                    value={formData.application}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Application</option>
+                    <option value="Roof">Roof</option>
+                    <option value="Basement">Basement</option>
+                    <option value="Bathroom">Bathroom</option>
+                    <option value="Foundation">Foundation</option>
+                    <option value="Pool">Pool</option>
+                    <option value="Deck">Deck</option>
+                    <option value="Balcony">Balcony</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Waterproofing Rating *</label>
+                  <select
+                    name="waterproofingRating"
+                    value={formData.waterproofingRating}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Rating</option>
+                    <option value="Class A">Class A (Best)</option>
+                    <option value="Class B">Class B (Good)</option>
+                    <option value="Class C">Class C (Standard)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Duration and Category */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration (Years) *</label>
+                  <input
+                    type="number"
+                    name="durationYears"
+                    value={formData.durationYears}
+                    onChange={handleInputChange}
+                    placeholder="e.g., 15"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Residential">Residential</option>
+                    <option value="Commercial">Commercial</option>
+                    <option value="Industrial">Industrial</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Brand */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                <input
+                  type="text"
+                  name="brand"
+                  value={formData.brand}
+                  onChange={handleInputChange}
+                  placeholder="Brand name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  required
+                  placeholder="Product description"
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Detailed product description..."
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Product Details</label>
-                  {formData.details.map((detail, index) => (
-                    <div key={index} className="flex gap-2 mb-2">
-                      <input
-                        type="text"
-                        value={detail}
-                        onChange={(e) => handleArrayChange("details", index, e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Product specification"
-                      />
+              {/* Details */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Product Details</label>
+                {formData.details.map((detail, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={detail}
+                      onChange={(e) => handleArrayChange("details", index, e.target.value)}
+                      placeholder={`Detail ${index + 1}`}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {formData.details.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeArrayItem("details", index)}
-                        className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={18} />
                       </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => addArrayItem("details")}
-                    className="flex items-center px-3 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-                  >
-                    <Plus size={16} className="mr-1" />
-                    Add Detail
-                  </button>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Care Instructions</label>
-                  {formData.careInstructions.map((instruction, index) => (
-                    <div key={index} className="flex gap-2 mb-2">
-                      <input
-                        type="text"
-                        value={instruction}
-                        onChange={(e) => handleArrayChange("careInstructions", index, e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Care instruction"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeArrayItem("careInstructions", index)}
-                        className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => addArrayItem("careInstructions")}
-                    className="flex items-center px-3 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-                  >
-                    <Plus size={16} className="mr-1" />
-                    Add Instruction
-                  </button>
-                </div>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => addArrayItem("details")}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mt-2"
+                >
+                  <Plus size={18} />
+                  Add Detail
+                </button>
               </div>
 
-              {/* Media Upload Section */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Media Files</h3>
+              {/* Application Instructions */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Application Instructions</label>
+                {formData.applicationInstructions.map((instruction, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={instruction}
+                      onChange={(e) => handleArrayChange("applicationInstructions", index, e.target.value)}
+                      placeholder={`Step ${index + 1}`}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {formData.applicationInstructions.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeArrayItem("applicationInstructions", index)}
+                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => addArrayItem("applicationInstructions")}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mt-2"
+                >
+                  <Plus size={18} />
+                  Add Instruction
+                </button>
+              </div>
+
+              {/* Images */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Product Images *</label>
 
                 {/* Existing Images */}
                 {existingImages.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Current Images</label>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="mb-4">
+                    <p className="text-xs text-gray-500 mb-2">Current Images:</p>
+                    <div className="grid grid-cols-4 gap-2">
                       {existingImages.map((image, index) => (
                         <div key={index} className="relative">
-                          <img
-                            src={image || "/placeholder.svg?height=80&width=80"}
-                            alt={`Existing ${index}`}
-                            className="h-20 w-20 object-cover rounded border"
-                          />
+                          <img src={image} alt={`Product ${index}`} className="w-full h-20 object-cover rounded" />
                           <button
                             type="button"
                             onClick={() => removeImage(index, true)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                           >
                             <X size={14} />
                           </button>
@@ -578,108 +566,75 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
                   </div>
                 )}
 
-                {/* Image Upload */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Upload New Images</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">Click to upload or drag and drop images</p>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/jpeg,image/png,image/gif,image/webp"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <label
-                      htmlFor="image-upload"
-                      className="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded-md cursor-pointer hover:bg-blue-600"
-                    >
-                      Choose Images
-                    </label>
-                  </div>
-
-                  {imageFiles.length > 0 && (
-                    <div className="mt-4">
-                      <p className="text-sm font-medium text-gray-700 mb-2">New Images:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {imageFiles.map((file, index) => (
-                          <div key={index} className="relative">
-                            <img
-                              src={URL.createObjectURL(file) || "/placeholder.svg"}
-                              alt={`New ${index}`}
-                              className="h-20 w-20 object-cover rounded border"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index, false)}
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
+                {/* New Images */}
+                {imageFiles.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs text-gray-500 mb-2">New Images:</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {imageFiles.map((file, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`New ${index}`}
+                            className="w-full h-20 object-cover rounded"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index, false)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  )}
-                </div>
-
-                {/* Video Upload */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Upload Video File (Optional)</label>
-                  <input
-                    type="file"
-                    accept="video/mp4,video/webm,video/ogg"
-                    onChange={handleVideoUpload}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {videoFile && (
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-600">Selected: {videoFile.name}</p>
-                      <button
-                        type="button"
-                        onClick={() => setVideoFile(null)}
-                        className="text-red-500 text-sm hover:text-red-700"
-                      >
-                        Remove video
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Video URL - only show if no video file is selected */}
-                {!videoFile && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Or Video URL (Optional)</label>
-                    <input
-                      type="url"
-                      name="video"
-                      value={formData.video}
-                      onChange={handleInputChange}
-                      placeholder="https://example.com/video.mp4"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      You can either upload a video file above or provide a video URL here
-                    </p>
                   </div>
                 )}
 
-                {/* Audio URL */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Audio Sample URL (Optional)</label>
+                {/* Upload Area */}
+                <label className="block border-2 border-dashed border-gray-300 rounded-md p-6 text-center cursor-pointer hover:border-blue-500">
+                  <Upload size={24} className="mx-auto mb-2 text-gray-400" />
+                  <p className="text-sm text-gray-600">Click to upload images</p>
                   <input
-                    type="url"
-                    name="audio"
-                    value={formData.audio}
-                    onChange={handleInputChange}
-                    placeholder="https://example.com/audio.mp3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={loading}
+                    className="hidden"
                   />
-                </div>
+                </label>
               </div>
 
+              {/* Video */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Product Video (Optional)</label>
+                {videoFile && (
+                  <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md flex justify-between items-center">
+                    <p className="text-sm text-blue-700">{videoFile.name}</p>
+                    <button
+                      type="button"
+                      onClick={() => setVideoFile(null)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                )}
+                <label className="block border-2 border-dashed border-gray-300 rounded-md p-6 text-center cursor-pointer hover:border-blue-500">
+                  <Upload size={24} className="mx-auto mb-2 text-gray-400" />
+                  <p className="text-sm text-gray-600">Click to upload video</p>
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoUpload}
+                    disabled={loading}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              {/* Stock and Rating */}
               <div className="flex items-center space-x-4">
                 <label className="flex items-center">
                   <input
@@ -720,17 +675,17 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
               </div>
             </div>
           ) : (
+            /* SEO Tab */
             <div className="space-y-6">
               <div className="bg-blue-50 p-4 rounded-md">
                 <h3 className="text-lg font-medium text-blue-800 mb-2">SEO Preview</h3>
                 <div className="space-y-2">
                   <p className="text-blue-700 font-medium">
-                    {formData.seoTitle || `${formData.name} - Authentic Himalayan Singing Bowl | OMSound Nepal`}
+                    {formData.seoTitle || `${formData.name} - Professional Waterproofing`}
                   </p>
                   <p className="text-gray-600 text-sm">
                     {formData.seoDescription || `${formData.description.substring(0, 150)}...`}
                   </p>
-                  <p className="text-gray-500 text-xs">URL: https://omsoundnepal.com/product/{formData.id}</p>
                 </div>
               </div>
 
@@ -774,29 +729,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
                   placeholder="Comma-separated keywords"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <div className="mt-2">
-                  <p className="text-xs text-gray-500 mb-1">Suggested keywords:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {generateSEOSuggestions().map((keyword, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => {
-                          const currentKeywords = formData.seoKeywords
-                          const newKeywords = currentKeywords ? `${currentKeywords}, ${keyword}` : keyword
-                          setFormData((prev) => ({ ...prev, seoKeywords: newKeywords }))
-                        }}
-                        className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded hover:bg-gray-200"
-                      >
-                        + {keyword}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
           )}
 
+          {/* Progress Bar */}
           {uploadProgress > 0 && uploadProgress < 100 && (
             <div className="mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2.5">
@@ -809,11 +746,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
             </div>
           )}
 
+          {/* Buttons */}
           <div className="flex justify-between pt-6 border-t border-gray-200 mt-6">
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              disabled={loading}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
             >
               Cancel
             </button>
@@ -822,7 +761,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
                 <button
                   type="button"
                   onClick={() => setActiveTab("seo")}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                  disabled={loading}
+                  className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 disabled:opacity-50"
                 >
                   Continue to SEO
                 </button>
@@ -831,7 +771,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
                 <button
                   type="button"
                   onClick={() => setActiveTab("product")}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                  disabled={loading}
+                  className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 disabled:opacity-50"
                 >
                   Back to Product
                 </button>

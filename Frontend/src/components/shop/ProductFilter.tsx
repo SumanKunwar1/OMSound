@@ -26,29 +26,20 @@ const sortOptions = [
   { value: "newest" as SortOption, label: "Newest First" },
 ]
 
+// ✅ FIXED: Updated FilterState for waterproofing products
+interface FilterState {
+  types: string[]
+  applications: string[]
+  waterproofingRatings: string[]
+  categories: string[]
+  brands: string[]
+  inStock: boolean
+  priceRange: [number, number]
+}
+
 interface ProductFilterProps {
-  activeFilters: {
-    sizes: string[]
-    tones: string[]
-    types: string[]
-    musicalNotes: string[]
-    categories: string[]
-    brands: string[]
-    inStock: boolean
-    priceRange: [number, number]
-  }
-  setActiveFilters: React.Dispatch<
-    React.SetStateAction<{
-      sizes: string[]
-      tones: string[]
-      types: string[]
-      musicalNotes: string[]
-      categories: string[]
-      brands: string[]
-      inStock: boolean
-      priceRange: [number, number]
-    }>
-  >
+  activeFilters: FilterState
+  setActiveFilters: React.Dispatch<React.SetStateAction<FilterState>>
   resetFilters: () => void
   sortBy: SortOption
   setSortBy: (sort: SortOption) => void
@@ -65,40 +56,44 @@ const ProductFilter = ({
 }: ProductFilterProps) => {
   const [showFilters, setShowFilters] = useState(false)
 
-  // Extract unique values from products
-  const getUniqueValues = (key: keyof Product) => {
-    const values = products.map((product) => product[key]).filter(Boolean)
+  // ✅ FIXED: Get unique values from waterproofing product fields
+  const getUniqueValues = (key: keyof Product): string[] => {
+    const values = products
+      .map((product) => {
+        const value = product[key]
+        return typeof value === "string" ? value : ""
+      })
+      .filter((val): val is string => Boolean(val))
     return [...new Set(values)].sort()
   }
 
   const filterOptions = {
-    sizes: getUniqueValues("size") as string[],
-    tones: getUniqueValues("tone") as string[],
-    types: getUniqueValues("type") as string[],
-    categories: getUniqueValues("category") as string[],
-    brands: getUniqueValues("brand") as string[],
-    musicalNotes: getUniqueValues("musicalNote") as string[],
+    types: getUniqueValues("type"),
+    applications: getUniqueValues("application"),
+    waterproofingRatings: getUniqueValues("waterproofingRating"),
+    categories: getUniqueValues("category"),
+    brands: getUniqueValues("brand"),
   }
 
-  const sizes = filterOptions.sizes
-  const tones = filterOptions.tones
   const types = filterOptions.types
+  const applications = filterOptions.applications
+  const waterproofingRatings = filterOptions.waterproofingRatings
   const categories = filterOptions.categories
   const brands = filterOptions.brands
-  const musicalNotes = filterOptions.musicalNotes
 
   // Get price range from products
-  const prices = products.map((p) => p.price)
-  const minPrice = Math.min(...prices, 0)
-  const maxPrice = Math.max(...prices, 1000)
+  const prices = products.map((p) => p.price).filter((p) => p > 0)
+  const minPrice = prices.length > 0 ? Math.min(...prices) : 0
+  const maxPrice = prices.length > 0 ? Math.max(...prices) : 10000
 
-  const handleFilterChange = (filterType: string, value: string, checked: boolean) => {
-    setActiveFilters((prev) => ({
-      ...prev,
-      [filterType]: checked
-        ? [...(prev[filterType as keyof typeof prev] as string[]), value]
-        : (prev[filterType as keyof typeof prev] as string[]).filter((item) => item !== value),
-    }))
+  const handleFilterChange = (filterType: keyof FilterState, value: string, checked: boolean) => {
+    setActiveFilters((prev) => {
+      const filterArray = prev[filterType] as string[]
+      return {
+        ...prev,
+        [filterType]: checked ? [...filterArray, value] : filterArray.filter((item) => item !== value),
+      }
+    })
   }
 
   const handlePriceRangeChange = (range: [number, number]) => {
@@ -109,10 +104,9 @@ const ProductFilter = ({
   }
 
   const hasActiveFilters =
-    activeFilters.sizes.length > 0 ||
-    activeFilters.tones.length > 0 ||
     activeFilters.types.length > 0 ||
-    activeFilters.musicalNotes.length > 0 ||
+    activeFilters.applications.length > 0 ||
+    activeFilters.waterproofingRatings.length > 0 ||
     activeFilters.categories.length > 0 ||
     activeFilters.brands.length > 0 ||
     activeFilters.inStock ||
@@ -164,7 +158,7 @@ const ProductFilter = ({
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {/* Categories */}
             {categories.length > 0 && (
               <div>
@@ -185,47 +179,7 @@ const ProductFilter = ({
               </div>
             )}
 
-            {/* Sizes */}
-            {sizes.length > 0 && (
-              <div>
-                <h4 className="font-medium text-ivory mb-3">Size</h4>
-                <div className="space-y-2">
-                  {sizes.map((size) => (
-                    <label key={size} className="flex items-center text-ivory/80">
-                      <input
-                        type="checkbox"
-                        checked={activeFilters.sizes.includes(size)}
-                        onChange={(e) => handleFilterChange("sizes", size, e.target.checked)}
-                        className="mr-2 rounded border-gold/20 text-gold focus:ring-gold"
-                      />
-                      <span className="text-sm">{size}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Tones */}
-            {tones.length > 0 && (
-              <div>
-                <h4 className="font-medium text-ivory mb-3">Tone</h4>
-                <div className="space-y-2">
-                  {tones.map((tone) => (
-                    <label key={tone} className="flex items-center text-ivory/80">
-                      <input
-                        type="checkbox"
-                        checked={activeFilters.tones.includes(tone)}
-                        onChange={(e) => handleFilterChange("tones", tone, e.target.checked)}
-                        className="mr-2 rounded border-gold/20 text-gold focus:ring-gold"
-                      />
-                      <span className="text-sm">{tone}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Types */}
+            {/* ✅ FIXED: Type Filter for Waterproofing */}
             {types.length > 0 && (
               <div>
                 <h4 className="font-medium text-ivory mb-3">Type</h4>
@@ -239,6 +193,46 @@ const ProductFilter = ({
                         className="mr-2 rounded border-gold/20 text-gold focus:ring-gold"
                       />
                       <span className="text-sm">{type}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ✅ FIXED: Application Filter for Waterproofing */}
+            {applications.length > 0 && (
+              <div>
+                <h4 className="font-medium text-ivory mb-3">Application</h4>
+                <div className="space-y-2">
+                  {applications.map((app) => (
+                    <label key={app} className="flex items-center text-ivory/80">
+                      <input
+                        type="checkbox"
+                        checked={activeFilters.applications.includes(app)}
+                        onChange={(e) => handleFilterChange("applications", app, e.target.checked)}
+                        className="mr-2 rounded border-gold/20 text-gold focus:ring-gold"
+                      />
+                      <span className="text-sm">{app}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ✅ FIXED: Waterproofing Rating Filter */}
+            {waterproofingRatings.length > 0 && (
+              <div>
+                <h4 className="font-medium text-ivory mb-3">Rating</h4>
+                <div className="space-y-2">
+                  {waterproofingRatings.map((rating) => (
+                    <label key={rating} className="flex items-center text-ivory/80">
+                      <input
+                        type="checkbox"
+                        checked={activeFilters.waterproofingRatings.includes(rating)}
+                        onChange={(e) => handleFilterChange("waterproofingRatings", rating, e.target.checked)}
+                        className="mr-2 rounded border-gold/20 text-gold focus:ring-gold"
+                      />
+                      <span className="text-sm">{rating}</span>
                     </label>
                   ))}
                 </div>

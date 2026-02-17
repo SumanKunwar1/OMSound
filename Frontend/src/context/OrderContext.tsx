@@ -5,14 +5,49 @@ import { useAuth } from "./AuthContext"
 import axios from "axios"
 import { API_URL } from "../config"
 
+// ✅ FIXED: Waterproofing Product interface (matches product_service.ts)
+export interface Product {
+  _id?: string
+  id: string
+  name: string
+  price: number
+  // Waterproofing specific fields
+  coverage: string
+  type: string
+  application: string
+  waterproofingRating: string
+  durationYears: number
+  // Common fields
+  images?: string[]
+  description: string
+  details?: string[]
+  category?: string
+  brand?: string
+  rating?: number
+  reviewCount?: number
+  inStock?: boolean
+  applicationInstructions?: string[]
+  // Optional media
+  audio?: string
+  video?: string
+  // SEO fields
+  seoTitle?: string
+  seoDescription?: string
+  seoKeywords?: string
+  // Timestamps
+  createdAt?: string
+  updatedAt?: string
+}
+
 interface OrderItem {
   productId: string
   productName: string
   productImage: string
   quantity: number
   price: number
-  size?: string
-  tone?: string
+  coverage?: string
+  type?: string
+  application?: string
 }
 
 interface ShippingAddress {

@@ -1,19 +1,20 @@
 import mongoose, { type Document } from "mongoose"
 
 export interface IProduct extends Document {
-  id: string // Custom product ID (different from MongoDB _id)
+  id: string
   name: string
   price: number
-  size: string
-  tone: string
+  coverage: string
   type: string
-  musicalNote: string
+  application: string
+  waterproofingRating: string
+  durationYears: number
   images: string[]
   video?: string
   audio?: string
   description: string
   details: string[]
-  careInstructions?: string[]
+  applicationInstructions?: string[]
   inStock: boolean
   rating: number
   reviewCount: number
@@ -30,24 +31,25 @@ const productSchema = new mongoose.Schema<IProduct>(
       type: String,
       required: true,
       unique: true,
-      index: true, // Add index for better performance
+      index: true,
     },
     name: { type: String, required: true },
     price: { type: Number, required: true },
-    size: { type: String, required: true },
-    tone: { type: String, required: true },
+    coverage: { type: String, required: true },
     type: { type: String, required: true },
-    musicalNote: { type: String, required: true },
+    application: { type: String, required: true },
+    waterproofingRating: { type: String, required: true },
+    durationYears: { type: Number, required: true },
     images: { type: [String], required: true },
     video: { type: String },
     audio: { type: String },
     description: { type: String, required: true },
     details: { type: [String], required: true },
-    careInstructions: { type: [String] },
+    applicationInstructions: { type: [String] },
     inStock: { type: Boolean, default: true },
     rating: { type: Number, default: 0 },
     reviewCount: { type: Number, default: 0 },
-    brand: { type: String, default: "OMSound Nepal" },
+    brand: { type: String, default: "Trinity Waterproofing" },
     category: { type: String, required: true },
     seoTitle: { type: String },
     seoDescription: { type: String },
@@ -56,7 +58,6 @@ const productSchema = new mongoose.Schema<IProduct>(
   { timestamps: true },
 )
 
-// Add a method to find by custom id
 productSchema.statics.findByCustomId = function (customId: string) {
   return this.findOne({ id: customId })
 }

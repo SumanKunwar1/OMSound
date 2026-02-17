@@ -1,4 +1,3 @@
-// routes/product.routes.ts
 import express from "express"
 import {
   createProduct,
@@ -15,36 +14,48 @@ const router = express.Router()
 
 // Add logging middleware
 router.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`)
-  console.log("Headers:", req.headers)
+  console.log(`[PRODUCT] ${req.method} ${req.path}`)
   next()
 })
 
 // Public routes
 router.get("/shop", asyncHandler(getProductsForShop))
-router.get("/:id", asyncHandler(getProductById)) // This will handle both MongoDB _id and custom id
+router.get("/:id", asyncHandler(getProductById))
 
-// Admin routes - Make sure these come after the specific routes
+// Admin routes - Ensure GET / comes after specific routes
 router.get("/", asyncHandler(getProducts))
 
-// Add specific logging for POST route
+// POST route with multer and specific error handling
 router.post(
   "/",
   (req, res, next) => {
-    console.log("POST /products - Before multer")
+    console.log("[PRODUCT] POST - Starting file upload")
     next()
   },
   uploadFiles,
   (req, res, next) => {
-    console.log("POST /products - After multer")
-    console.log("Body:", req.body)
-    console.log("Files:", req.files)
+    console.log("[PRODUCT] POST - Files received:", {
+      images: (req.files as any)?.images?.length || 0,
+      video: (req.files as any)?.video?.length || 0,
+      fields: Object.keys(req.body),
+    })
     next()
   },
   asyncHandler(createProduct),
 )
 
-router.put("/:id", uploadFiles, asyncHandler(updateProduct))
+// PUT route with multer
+router.put(
+  "/:id",
+  (req, res, next) => {
+    console.log(`[PRODUCT] PUT ${req.params.id} - Starting file upload`)
+    next()
+  },
+  uploadFiles,
+  asyncHandler(updateProduct),
+)
+
+// DELETE route
 router.delete("/:id", asyncHandler(deleteProduct))
 
 export default router

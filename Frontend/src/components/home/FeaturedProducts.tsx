@@ -2,13 +2,13 @@
 
 import { useRef, useState, useEffect } from "react"
 import { motion, useInView } from "framer-motion"
-import { Link } from "react-router-dom" // Using react-router-dom Link
-import ProductCard from "../../components/shop/ProductCard" // Assuming ProductCard is in components/shop
-import { productService, type Product } from "../../services/product.service" // Using your provided product.service
+import { Link } from "react-router-dom"
+import ProductCard from "../../components/shop/ProductCard"
+import { productService, type Product } from "../../services/product.service"
 
 const FeaturedProducts = () => {
   const sectionRef = useRef<HTMLDivElement>(null)
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+  const isInView = useInView(sectionRef, { once: true, amount: 0.1 })
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -19,9 +19,10 @@ const FeaturedProducts = () => {
         setIsLoading(true)
         setError(null)
         const allProducts = await productService.getProductsForShop()
-        // Filter for in-stock products and take the first 3
+        // Filter for in-stock products and take the first 16 (4 rows × 4 cols)
         const inStockProducts = allProducts.filter((product) => product.inStock)
-        setFeaturedProducts(inStockProducts.slice(0, 3))
+        // Take up to 16 products for 4 rows of 4
+        setFeaturedProducts(inStockProducts.slice(0, 16))
       } catch (err) {
         console.error("Error fetching featured products:", err)
         setError("Failed to load featured products.")
@@ -38,56 +39,84 @@ const FeaturedProducts = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
+        staggerChildren: 0.08,
       },
     },
   }
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 24 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.6,
+        duration: 0.5,
       },
     },
   }
 
   return (
-    <section ref={sectionRef} className="section bg-charcoal py-16">
+    <section ref={sectionRef} className="section bg-charcoal py-20">
       <div className="container mx-auto px-4">
         <motion.div variants={containerVariants} initial="hidden" animate={isInView ? "visible" : "hidden"}>
-          <motion.h2 variants={itemVariants} className="section-title text-gold text-center text-3xl font-bold mb-4">
-            Featured Products
-          </motion.h2>
+          {/* Header */}
+          <motion.div variants={itemVariants} className="text-center mb-4">
+            <span className="inline-block text-xs uppercase tracking-widest text-gold/70 font-medium mb-3 border border-gold/30 px-4 py-1 rounded-full">
+              Our Products
+            </span>
+            <h2 className="text-4xl font-serif font-bold text-gold mb-4">Featured Products</h2>
+            <p className="text-ivory/70 text-lg max-w-xl mx-auto">
+              Experience our most trusted waterproofing solutions
+            </p>
+          </motion.div>
 
-          <motion.p variants={itemVariants} className="section-subtitle text-ivory/80 text-center text-lg mb-12">
-            Experience our most trusted waterproofing solutions
-          </motion.p>
+          {/* Decorative line */}
+          <motion.div variants={itemVariants} className="flex items-center justify-center mb-12">
+            <div className="h-px w-16 bg-gold/30"></div>
+            <div className="w-2 h-2 rounded-full bg-gold mx-3"></div>
+            <div className="h-px w-16 bg-gold/30"></div>
+          </motion.div>
 
           {isLoading ? (
-            <div className="text-center text-ivory">Loading featured products...</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-navy/20 rounded-xl overflow-hidden animate-pulse">
+                  <div className="aspect-[4/3] bg-navy/40"></div>
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-navy/40 rounded w-3/4"></div>
+                    <div className="h-3 bg-navy/40 rounded w-full"></div>
+                    <div className="h-3 bg-navy/40 rounded w-2/3"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : error ? (
-            <div className="text-center text-red-400">{error}</div>
+            <div className="text-center text-red-400 py-8">{error}</div>
           ) : featuredProducts.length === 0 ? (
-            <div className="text-center text-ivory/70">No featured products available at the moment.</div>
+            <div className="text-center text-ivory/70 py-8">No featured products available at the moment.</div>
           ) : (
-            <motion.div variants={containerVariants} className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+            <motion.div
+              variants={containerVariants}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
               {featuredProducts.map((product) => (
-                <motion.div key={product.id} variants={itemVariants}>
+                <motion.div key={product.id} variants={itemVariants} className="h-full">
                   <ProductCard product={product} />
                 </motion.div>
               ))}
             </motion.div>
           )}
 
-          <motion.div variants={itemVariants} className="mt-16 text-center">
+          {/* View All Button */}
+          <motion.div variants={itemVariants} className="mt-14 text-center">
             <Link
               to="/shop"
-              className="btn-primary inline-flex items-center justify-center px-6 py-3 rounded-md font-medium bg-gold text-charcoal hover:bg-opacity-90 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-medium bg-gold text-charcoal hover:bg-opacity-90 transition-all hover:shadow-lg hover:shadow-gold/20 hover:-translate-y-0.5"
             >
               View All Products
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </Link>
           </motion.div>
         </motion.div>

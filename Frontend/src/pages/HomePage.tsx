@@ -10,7 +10,6 @@ import ModernSection from "../components/home/ModernSection"
 import FeaturedBrandsSection from "../components/home/FeaturedBrand"
 
 const HomePage = () => {
-  // Default Trinity Waterproofing SEO data
   const trinityDefaultSEO = {
     title: "Trinity Waterproofing - Expert Waterproofing Solutions in Nepal",
     description: "Trinity Waterproofing offers premium waterproofing solutions for residential and commercial properties. Comprehensive protection against water damage with 20+ years of expertise.",
@@ -35,17 +34,19 @@ const HomePage = () => {
       {/* Hero Section */}
       <HeroSection />
 
-      {/* Story Section */}
-      <StorySection />
-
       {/* Healing/Products Section */}
       <HealingSection />
 
-      {/* Featured Products */}
+
+       {/* Featured Products - now shows 4 rows (12 products) */}
       <FeaturedProducts />
 
       {/* Featured Brands */}
       <FeaturedBrandsSection />
+
+      
+
+      
 
       {/* Craft/Quality Process Section */}
       <CraftSection />
@@ -56,7 +57,7 @@ const HomePage = () => {
       {/* Free Shipping Banner */}
       <div className="bg-gold py-3">
         <div className="container-custom">
-          <p className="text-center text-charcoal font-medium">Free shipping on all orders over NPR 10,000</p>
+          <p className="text-center text-charcoal font-medium">Free shipping on all orders over Rs 10,000</p>
         </div>
       </div>
     </div>

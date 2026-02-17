@@ -1,176 +1,187 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from "react"
 
-// Complete Product interface matching your actual product data
+// ✅ FIXED: Waterproofing Product interface (matches product_service.ts)
 export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  size: string;
-  tone: string;
-  type: string;
-  image: string; // Single image for cart display
-  images?: string[]; // Optional array of images from product data
-  audio?: string;
-  video?: string;
-  description: string;
-  category?: string;
-  musicalNote?: string;
-  rating?: number;
-  reviewCount?: number;
-  inStock?: boolean;
-  details?: string[];
+  _id?: string
+  id: string
+  name: string
+  price: number
+  // ✅ Waterproofing specific fields
+  coverage: string
+  type: string
+  application: string
+  waterproofingRating: string
+  durationYears: number
+  // ✅ Common fields
+  images?: string[]
+  description: string
+  details?: string[]
+  category?: string
+  brand?: string
+  rating?: number
+  reviewCount?: number
+  inStock?: boolean
+  applicationInstructions?: string[]
+  // ✅ Optional media
+  audio?: string
+  video?: string
+  // ✅ SEO fields
+  seoTitle?: string
+  seoDescription?: string
+  seoKeywords?: string
+  // ✅ Timestamps
+  createdAt?: string
+  updatedAt?: string
 }
 
 interface CartItem {
-  product: Product;
-  quantity: number;
+  product: Product
+  quantity: number
 }
 
 interface CartContextType {
-  cart: CartItem[];
-  addToCart: (product: Product, quantity: number) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
-  totalItems: number;
-  totalPrice: number;
+  cart: CartItem[]
+  addToCart: (product: Product, quantity: number) => void
+  removeFromCart: (productId: string) => void
+  updateQuantity: (productId: string, quantity: number) => void
+  clearCart: () => void
+  totalItems: number
+  totalPrice: number
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function useCart() {
-  const context = useContext(CartContext);
+  const context = useContext(CartContext)
   if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
+    throw new Error("useCart must be used within a CartProvider")
   }
-  return context;
+  return context
 }
 
 interface CartProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 function CartProvider({ children }: CartProviderProps) {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  
+  const [cart, setCart] = useState<CartItem[]>([])
+
   // Load cart from localStorage on initial render
   useEffect(() => {
     try {
-      const savedCart = localStorage.getItem('cart');
+      const savedCart = localStorage.getItem("cart")
       if (savedCart) {
-        const parsedCart = JSON.parse(savedCart);
+        const parsedCart = JSON.parse(savedCart)
         // Validate cart data structure
         if (Array.isArray(parsedCart)) {
-          setCart(parsedCart);
+          setCart(parsedCart)
         }
       }
     } catch (error) {
-      console.error('Error loading cart from localStorage', error);
+      console.error("Error loading cart from localStorage", error)
       // Clear corrupted cart data
-      localStorage.removeItem('cart');
+      localStorage.removeItem("cart")
     }
-  }, []);
-  
+  }, [])
+
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     try {
-      localStorage.setItem('cart', JSON.stringify(cart));
+      localStorage.setItem("cart", JSON.stringify(cart))
     } catch (error) {
-      console.error('Error saving cart to localStorage', error);
+      console.error("Error saving cart to localStorage", error)
     }
-  }, [cart]);
+  }, [cart])
 
   const addToCart = (product: Product, quantity: number) => {
     try {
       // Validate inputs
       if (!product || !product.id || quantity <= 0) {
-        throw new Error('Invalid product or quantity');
+        throw new Error("Invalid product or quantity")
       }
 
       setCart((prevCart) => {
-        const existingItem = prevCart.find(item => item.product.id === product.id);
-        
+        const existingItem = prevCart.find((item) => item.product.id === product.id)
+
         if (existingItem) {
           // Update existing item quantity
-          return prevCart.map(item =>
+          return prevCart.map((item) =>
             item.product.id === product.id
               ? { ...item, quantity: item.quantity + quantity }
-              : item
-          );
+              : item,
+          )
         } else {
           // Add new item to cart
-          return [...prevCart, { product, quantity }];
+          return [...prevCart, { product, quantity }]
         }
-      });
+      })
     } catch (error) {
-      console.error('Error adding to cart:', error);
-      throw error; // Re-throw to handle in component
+      console.error("Error adding to cart:", error)
+      throw error // Re-throw to handle in component
     }
-  };
+  }
 
   const removeFromCart = (productId: string) => {
     try {
       if (!productId) {
-        throw new Error('Product ID is required');
+        throw new Error("Product ID is required")
       }
-      
-      setCart(prevCart => prevCart.filter(item => item.product.id !== productId));
+
+      setCart((prevCart) => prevCart.filter((item) => item.product.id !== productId))
     } catch (error) {
-      console.error('Error removing from cart:', error);
+      console.error("Error removing from cart:", error)
     }
-  };
+  }
 
   const updateQuantity = (productId: string, quantity: number) => {
     try {
       if (!productId) {
-        throw new Error('Product ID is required');
+        throw new Error("Product ID is required")
       }
 
       if (quantity <= 0) {
-        removeFromCart(productId);
-        return;
+        removeFromCart(productId)
+        return
       }
-      
-      setCart(prevCart =>
-        prevCart.map(item =>
-          item.product.id === productId
-            ? { ...item, quantity }
-            : item
-        )
-      );
+
+      setCart((prevCart) =>
+        prevCart.map((item) =>
+          item.product.id === productId ? { ...item, quantity } : item,
+        ),
+      )
     } catch (error) {
-      console.error('Error updating quantity:', error);
+      console.error("Error updating quantity:", error)
     }
-  };
+  }
 
   const clearCart = () => {
     try {
-      setCart([]);
+      setCart([])
     } catch (error) {
-      console.error('Error clearing cart:', error);
+      console.error("Error clearing cart:", error)
     }
-  };
+  }
 
   // Safe calculations with error handling
   const totalItems = cart.reduce((total, item) => {
     try {
-      return total + (item.quantity || 0);
+      return total + (item.quantity || 0)
     } catch (error) {
-      console.error('Error calculating total items:', error);
-      return total;
+      console.error("Error calculating total items:", error)
+      return total
     }
-  }, 0);
-  
+  }, 0)
+
   const totalPrice = cart.reduce((total, item) => {
     try {
-      const price = item.product.price || 0;
-      const quantity = item.quantity || 0;
-      return total + (price * quantity);
+      const price = item.product.price || 0
+      const quantity = item.quantity || 0
+      return total + price * quantity
     } catch (error) {
-      console.error('Error calculating total price:', error);
-      return total;
+      console.error("Error calculating total price:", error)
+      return total
     }
-  }, 0);
+  }, 0)
 
   const value = {
     cart,
@@ -179,10 +190,10 @@ function CartProvider({ children }: CartProviderProps) {
     updateQuantity,
     clearCart,
     totalItems,
-    totalPrice
-  };
+    totalPrice,
+  }
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }
 
-export default CartProvider;
+export default CartProvider

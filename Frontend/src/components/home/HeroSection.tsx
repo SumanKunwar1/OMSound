@@ -1,101 +1,210 @@
-import { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+
+const slides = [
+  "https://res.cloudinary.com/dcsgax3ld/image/upload/v1771312763/1_tzcr8o.png",
+  "https://res.cloudinary.com/dcsgax3ld/image/upload/v1771312764/2_ju3oqc.png",
+  "https://res.cloudinary.com/dcsgax3ld/image/upload/v1771312764/3_dymhav.png",
+  "https://res.cloudinary.com/dcsgax3ld/image/upload/v1771312764/4_j6op4x.png",
+  "https://res.cloudinary.com/dcsgax3ld/image/upload/v1771312764/5_hwfaps.png",
+  "https://res.cloudinary.com/dcsgax3ld/image/upload/v1771312766/6_myoozt.png",
+  "https://res.cloudinary.com/dcsgax3ld/image/upload/v1771312765/8_hvvho9.png",
+];
+
+const SLIDE_MS = 4000;
+const FADE_MS  = 1100;
 
 const HeroSection = () => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  
+  const [current, setCurrent]             = useState(0);
+  const [prev, setPrev]                   = useState<number | null>(null);
+  const [transitioning, setTransitioning] = useState(false);
+
   useEffect(() => {
-    // Start playing the video when component mounts
-    if (videoRef.current) {
-      videoRef.current.play().catch(error => {
-        console.error('Autoplay prevented:', error);
-      });
-    }
-  }, []);
+    const id = setInterval(() => {
+      if (transitioning) return;
+      setPrev(current);
+      setTransitioning(true);
+      setCurrent(c => (c + 1) % slides.length);
+      setTimeout(() => { setPrev(null); setTransitioning(false); }, FADE_MS);
+    }, SLIDE_MS);
+    return () => clearInterval(id);
+  }, [current, transitioning]);
+
+  const goTo = (i: number) => {
+    if (i === current || transitioning) return;
+    setPrev(current);
+    setTransitioning(true);
+    setCurrent(i);
+    setTimeout(() => { setPrev(null); setTransitioning(false); }, FADE_MS);
+  };
 
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Video Background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-navy/60 z-10"></div>
-        <video 
-          ref={videoRef}
-          className="w-full h-full object-cover"
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-          poster="https://res.cloudinary.com/dihev9qxc/image/upload/v1767255187/a-cinematic-wide-angle-photograph-of-a-m_XchXWMdNSSGJaghx87BIdQ_5DpoUHy7S9KvP0rQVUk-Og_t8bhnj.jpg"
-        >
-          <source 
-            src="https://player.vimeo.com/external/538378273.sd.mp4?s=49938555c1b3f8b28889064c052386843e4e75e9&profile_id=164&oauth2_token_id=57447761" 
-            type="video/mp4" 
-          />
-          Your browser does not support the video tag.
-        </video>
-      </div>
+    <>
+      <style>{`
+        /* ── Banner sizing ─────────────────────────────────────────────────── */
+        .hero-wrap {
+          position: relative;
+          width: 100%;
+          overflow: hidden;
+          background: #071020;
 
-      {/* Content */}
-      <div className="container-custom relative z-20 text-center px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="max-w-3xl mx-auto"
-        >
-          <h1 className="text-ivory font-serif mb-6">
-            Built to Resist Water.
-<br />Engineered to Last.
-          </h1>
-          
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-xl text-ivory/90 mb-10"
-          >
-            Premium waterproofing solutions for roofs, basements, walls, and structures—designed to protect, strengthen, and extend the life of your property.
-          </motion.p>
-          
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 1 }}
-            className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center"
-          >
-            <Link to="/shop" className="btn-primary">
-              View Products
-            </Link>
-            <Link to="/about" className="btn-outline">
-              Our Story
-            </Link>
-          </motion.div>
-        </motion.div>
-      </div>
+          /* Push content below the fixed navbar.
+             Navbar desktop height: py-6 (24px top + 24px bottom) + ~28px logo = ~76px.
+             We use 76px here so nothing is hidden behind it.                  */
+          margin-top: 76px;
 
-      {/* Scroll indicator */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20"
-      >
-        <div className="w-8 h-12 border-2 border-ivory/50 rounded-full flex justify-center">
-          <motion.div 
-            animate={{ 
-              y: [0, 12, 0],
-            }}
-            transition={{ 
-              repeat: Infinity, 
-              duration: 1.5,
-              ease: "easeInOut" 
-            }}
-            className="w-1.5 h-3 bg-gold rounded-full mt-2"
-          ></motion.div>
+          /* Keep the exact 1920×900 ratio on large screens                    */
+          aspect-ratio: 1920 / 900;
+          max-height: 900px;
+        }
+
+        /* Tablet landscape (769–1280px) */
+        @media (max-width: 1280px) and (min-width: 769px) {
+          .hero-wrap {
+            aspect-ratio: 1920 / 900;
+            max-height: 500px;
+          }
+        }
+
+        /* Tablet portrait (481–768px): fixed height */
+        @media (max-width: 768px) and (min-width: 481px) {
+          .hero-wrap {
+            /* Navbar is slightly shorter on tablet */
+            margin-top: 68px;
+            aspect-ratio: unset;
+            height: 320px;
+            max-height: unset;
+          }
+          .hero-img { object-position: center center; }
+        }
+
+        /* Mobile (≤480px) */
+        @media (max-width: 480px) {
+          .hero-wrap {
+            /* Mobile navbar is py-4 (~64px) */
+            margin-top: 64px;
+            aspect-ratio: unset;
+            height: 200px;
+            max-height: unset;
+          }
+          .hero-img { object-position: center top; }
+        }
+
+        /* ── Ken Burns ──────────────────────────────────────────────────────── */
+        @keyframes kbL {
+          from { transform: scale(1)    translate(0%,     0%);   }
+          to   { transform: scale(1.06) translate(-1.2%, -0.6%); }
+        }
+        @keyframes kbR {
+          from { transform: scale(1)    translate(0%,    0%);   }
+          to   { transform: scale(1.06) translate(1.2%, -0.6%); }
+        }
+        .kb-l { animation: kbL ${SLIDE_MS + FADE_MS}ms ease-in-out forwards; }
+        .kb-r { animation: kbR ${SLIDE_MS + FADE_MS}ms ease-in-out forwards; }
+
+        /* ── Crossfade ──────────────────────────────────────────────────────── */
+        @keyframes hFadeIn  { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes hFadeOut { from { opacity: 1; } to { opacity: 0; } }
+        .h-in  { animation: hFadeIn  ${FADE_MS}ms ease-in-out forwards; }
+        .h-out { animation: hFadeOut ${FADE_MS}ms ease-in-out forwards; }
+
+        /* ── Progress pill fill ─────────────────────────────────────────────── */
+        @keyframes pillFill { from { width: 0%; } to { width: 100%; } }
+        .pill-fill { animation: pillFill ${SLIDE_MS}ms linear forwards; }
+      `}</style>
+
+      <div className="hero-wrap">
+
+        {/* Slide layers */}
+        {slides.map((src, i) => {
+          const active = i === current;
+          const exit   = i === prev;
+          if (!active && !exit) return null;
+          return (
+            <div
+              key={i}
+              className={active ? 'h-in' : 'h-out'}
+              style={{ position: 'absolute', inset: 0, zIndex: active ? 10 : 5 }}
+            >
+              <img
+                src={src}
+                alt={`Banner ${i + 1}`}
+                className={`hero-img ${active ? (i % 2 === 0 ? 'kb-l' : 'kb-r') : ''}`}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                  transformOrigin: 'center center',
+                }}
+                draggable={false}
+              />
+            </div>
+          );
+        })}
+
+        {/* Edge vignette only — centre completely clear */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 20,
+            pointerEvents: 'none',
+            background: 'radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.28) 100%)',
+          }}
+        />
+
+        {/* Progress dot indicators */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 14,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 30,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+          }}
+        >
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              style={{
+                position: 'relative',
+                height: 3,
+                width: i === current ? 44 : 18,
+                borderRadius: 999,
+                overflow: 'hidden',
+                background: 'rgba(255,255,255,0.35)',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                transition: 'width 0.35s ease',
+                flexShrink: 0,
+              }}
+            >
+              {i === current && (
+                <span
+                  key={`fp-${current}`}
+                  className="pill-fill"
+                  style={{
+                    position: 'absolute',
+                    left: 0, top: 0,
+                    height: '100%',
+                    background: '#fff',
+                    borderRadius: 999,
+                  }}
+                />
+              )}
+            </button>
+          ))}
         </div>
-      </motion.div>
-    </section>
+
+      </div>
+    </>
   );
 };
 

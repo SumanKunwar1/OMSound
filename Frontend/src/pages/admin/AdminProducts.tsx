@@ -1,23 +1,28 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
-import { Plus, TrendingUp } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Plus, TrendingUp, AlertCircle } from "lucide-react"
 import { useProducts, type Product } from "../../context/ProductContext"
 import DataTable from "../../components/admin/DataTable"
 import ProductForm from "../../components/admin/ProductForm"
 
 const AdminProducts: React.FC = () => {
-  const { products, loading, error, createProduct, updateProduct, deleteProduct, clearError } = useProducts()
+  const { products, loading, error, createProduct, updateProduct, deleteProduct, clearError, fetchProducts } = useProducts()
   const [showModal, setShowModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchProducts()
+  }, [fetchProducts])
 
   const calculateSEOScore = (product: Product): number => {
     let score = 0
     if (product.name && product.name.length > 0) score += 2
     if (product.description && product.description.length > 100) score += 2
     if (product.details && product.details.length >= 3) score += 1
-    if (product.careInstructions && product.careInstructions.length >= 3) score += 1
+    if (product.applicationInstructions && product.applicationInstructions.length >= 3) score += 1
     if (product.images && product.images.length >= 2) score += 1
     if (product.video) score += 1
     if (product.audio) score += 1
@@ -53,8 +58,8 @@ const AdminProducts: React.FC = () => {
       sortable: true,
       render: (price: number) => `$${price}`,
     },
-    { key: "category", label: "Category", sortable: true },
-    { key: "size", label: "Size" },
+    { key: "type", label: "Type", sortable: true },
+    { key: "application", label: "Application" },
     {
       key: "inStock",
       label: "Status",
@@ -95,10 +100,10 @@ const AdminProducts: React.FC = () => {
     if (window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
       try {
         await deleteProduct(product._id || product.id)
-        alert("Product deleted successfully")
+        setSuccessMessage("Product deleted successfully")
+        setTimeout(() => setSuccessMessage(null), 3000)
       } catch (error) {
         console.error("Delete error:", error)
-        alert("Failed to delete product")
       }
     }
   }
@@ -111,16 +116,16 @@ const AdminProducts: React.FC = () => {
     try {
       if (editingProduct) {
         await updateProduct(editingProduct._id || editingProduct.id, formData)
-        alert("Product updated successfully")
+        setSuccessMessage("Product updated successfully")
       } else {
         await createProduct(formData)
-        alert("Product created successfully")
+        setSuccessMessage("Product created successfully")
       }
       setShowModal(false)
       setEditingProduct(null)
+      setTimeout(() => setSuccessMessage(null), 3000)
     } catch (error) {
       console.error("Form submission error:", error)
-      // Error is handled by the context and will be displayed in the UI
     }
   }
 
@@ -141,7 +146,7 @@ const AdminProducts: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-600">Manage your product catalog and SEO settings</p>
+          <p className="text-gray-600">Manage your waterproofing product catalog and SEO settings</p>
         </div>
         <button
           onClick={handleAddNew}
@@ -152,9 +157,25 @@ const AdminProducts: React.FC = () => {
         </button>
       </div>
 
+      {/* Success Message */}
+      {successMessage && (
+        <div className="bg-green-50 border border-green-200 rounded-md p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-green-800">Success</h3>
+              <div className="mt-2 text-sm text-green-700">
+                <p>{successMessage}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
           <div className="flex">
+            <AlertCircle size={20} className="text-red-600 mr-3" />
             <div className="ml-3">
               <h3 className="text-sm font-medium text-red-800">Error</h3>
               <div className="mt-2 text-sm text-red-700">
@@ -173,6 +194,7 @@ const AdminProducts: React.FC = () => {
         </div>
       )}
 
+      {/* Data Table */}
       {loading && !showModal ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -189,6 +211,7 @@ const AdminProducts: React.FC = () => {
         />
       )}
 
+      {/* Product Form Modal */}
       {showModal && (
         <ProductForm product={editingProduct} onSubmit={handleFormSubmit} onCancel={handleCancel} loading={loading} />
       )}
