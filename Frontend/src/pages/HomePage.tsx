@@ -2,7 +2,6 @@
 
 import SEOHelmet from "../components/seo/SEOHelmet"
 import HeroSection from "../components/home/HeroSection"
-import StorySection from "../components/home/StorySection"
 import HealingSection from "../components/home/HealingSection"
 import FeaturedProducts from "../components/home/FeaturedProducts"
 import CraftSection from "../components/home/CraftSection"
