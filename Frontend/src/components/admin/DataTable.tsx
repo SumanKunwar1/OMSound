@@ -101,7 +101,7 @@ const DataTable: React.FC<DataTableProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full min-w-0">
       {searchable && (
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -115,9 +115,9 @@ const DataTable: React.FC<DataTableProps> = ({
         </div>
       )}
 
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200" style={{ minWidth: "900px" }}>
+      <div className="bg-white shadow-sm rounded-lg overflow-hidden w-full">
+        <div className="overflow-x-auto w-full" style={{ WebkitOverflowScrolling: "touch" }}>
+          <table className="divide-y divide-gray-200" style={{ minWidth: "600px", width: "100%" }}>
             <thead className="bg-gray-50">
               <tr>
                 {columns.map((column) => (

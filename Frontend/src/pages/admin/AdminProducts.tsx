@@ -38,7 +38,7 @@ const AdminProducts: React.FC = () => {
         <img
           src={images?.[0] || "/placeholder.svg?height=48&width=48"}
           alt="Product"
-          className="w-12 h-12 object-cover rounded"
+          className="w-10 h-10 object-cover rounded"
           onError={(e) => {
             ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=48&width=48"
           }}
@@ -46,12 +46,10 @@ const AdminProducts: React.FC = () => {
       ),
     },
     {
-      key: "id",
-      label: "ID",
+      key: "name",
+      label: "Name",
       sortable: true,
-      render: (id: string) => <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{id}</span>,
     },
-    { key: "name", label: "Name", sortable: true },
     {
       key: "price",
       label: "Price",
@@ -59,7 +57,6 @@ const AdminProducts: React.FC = () => {
       render: (price: number) => `$${price}`,
     },
     { key: "type", label: "Type", sortable: true },
-    { key: "application", label: "Application" },
     {
       key: "inStock",
       label: "Status",
@@ -74,16 +71,11 @@ const AdminProducts: React.FC = () => {
       ),
     },
     {
-      key: "rating",
-      label: "Rating",
-      render: (rating: number) => `${rating}/5`,
-    },
-    {
       key: "seoScore",
       label: "SEO",
       render: (_: any, product: Product) => (
         <div className="flex items-center">
-          <TrendingUp size={16} className="text-blue-500 mr-1" />
+          <TrendingUp size={14} className="text-blue-500 mr-1" />
           <span className="text-xs font-medium">{calculateSEOScore(product)}/10</span>
         </div>
       ),
@@ -142,20 +134,23 @@ const AdminProducts: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
+    <div className="space-y-4 p-4 w-full min-w-0 overflow-x-hidden pb-20">
+      {/* Header */}
+      <div className="flex flex-wrap items-start justify-between gap-3 w-full">
+        <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-600">Manage your waterproofing product catalog and SEO settings</p>
+          <p className="text-gray-600 text-sm">Manage your waterproofing product catalog and SEO settings</p>
         </div>
         <button
           onClick={handleAddNew}
-          className="flex-shrink-0 flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors whitespace-nowrap"
+          className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
         >
-          <Plus size={16} className="mr-2" />
+          <Plus size={16} />
           Add Product
         </button>
       </div>
+
+      
 
       {/* Success Message */}
       {successMessage && (
