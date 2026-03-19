@@ -117,7 +117,7 @@ const DataTable: React.FC<DataTableProps> = ({
 
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200" style={{ minWidth: "900px" }}>
             <thead className="bg-gray-50">
               <tr>
                 {columns.map((column) => (
