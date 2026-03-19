@@ -149,9 +149,6 @@ const AdminProducts: React.FC = () => {
           Add Product
         </button>
       </div>
-
-      
-
       {/* Success Message */}
       {successMessage && (
         <div className="bg-green-50 border border-green-200 rounded-md p-4">
